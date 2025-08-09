@@ -1,0 +1,71 @@
+{
+  "categorical_vocab": {
+    "sleep_bucket": [
+      "<4 hours",
+      "4-6 hours",
+      "7-9 hours",
+      "10+ hours"
+    ],
+    "exercise_bucket": [
+      "0-10 minutes",
+      "10-30 minutes",
+      "30-60 minutes",
+      "60+ minutes"
+    ],
+    "hydration_bucket": [
+      "0-1.5 litres",
+      "1.5-2.5 litres",
+      "2.5-3.5 litres",
+      "3.5+ litres"
+    ],
+    "mindset": [
+      "Sad",
+      "Neutral",
+      "Happy"
+    ]
+  },
+  "categorical_mapping": {
+    "sleep_bucket": {
+      "<4 hours": 0,
+      "4-6 hours": 1,
+      "7-9 hours": 2,
+      "10+ hours": 3
+    },
+    "exercise_bucket": {
+      "0-10 minutes": 0,
+      "10-30 minutes": 1,
+      "30-60 minutes": 2,
+      "60+ minutes": 3
+    },
+    "hydration_bucket": {
+      "0-1.5 litres": 0,
+      "1.5-2.5 litres": 1,
+      "2.5-3.5 litres": 2,
+      "3.5+ litres": 3
+    },
+    "mindset": {
+      "Sad": 0,
+      "Neutral": 1,
+      "Happy": 2
+    }
+  },
+  "time_columns_normalized": [
+    "breakfast_time",
+    "lunch_time",
+    "dinner_time"
+  ],
+  "numeric_columns": [
+    "mindfulness_count"
+  ],
+  "feature_order": [
+    "sleep_bucket",
+    "exercise_bucket",
+    "hydration_bucket",
+    "mindset",
+    "mindfulness_count",
+    "breakfast_time",
+    "lunch_time",
+    "dinner_time"
+  ],
+  "label_scale": "0-1 => *100 for percentage"
+}

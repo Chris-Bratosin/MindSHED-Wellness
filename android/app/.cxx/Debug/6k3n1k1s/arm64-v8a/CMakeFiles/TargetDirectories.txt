@@ -1,0 +1,2 @@
+/Users/callumwallace/Code/GitRepos/comp2003-2024-comp2003-group-27-mindshed/mindshed_app/android/app/.cxx/Debug/6k3n1k1s/arm64-v8a/CMakeFiles/edit_cache.dir
+/Users/callumwallace/Code/GitRepos/comp2003-2024-comp2003-group-27-mindshed/mindshed_app/android/app/.cxx/Debug/6k3n1k1s/arm64-v8a/CMakeFiles/rebuild_cache.dir
