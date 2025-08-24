@@ -1,0 +1,1 @@
+@rpath/mindshed_app.debug.dylib

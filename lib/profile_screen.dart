@@ -43,13 +43,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (userId == null) return;
 
     final streakKey = '${userId}_currentStreak';
-    final loginKey  = '${userId}_lastLoginDate';
-    final xpKey     = '${userId}_totalXp';
+    final loginKey = '${userId}_lastLoginDate';
+    final xpKey = '${userId}_totalXp';
 
     final lastLoginMillis = sessionBox.get(loginKey) as int?;
-    final storedStreak    = sessionBox.get(streakKey) as int? ?? 0;
-    final now             = DateTime.now();
-    final today           = DateTime(now.year, now.month, now.day);
+    final storedStreak = sessionBox.get(streakKey) as int? ?? 0;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
 
     // Fix: Initialize lastDate properly and use proper comparison
     DateTime? lastDate;
@@ -60,7 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     // Logic to determine the new streak value
     int newStreak;
-    
+
     if (lastDate == null) {
       // First login ever
       newStreak = 1;
@@ -79,7 +79,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     // Reward XP for milestone streaks
-    final xpGain = <int,int>{3:5, 7:10, 14:20, 30:50, 60:100, 90:150, 180:300, 365:1000};
+    final xpGain = <int, int>{
+      3: 5,
+      7: 10,
+      14: 20,
+      30: 50,
+      60: 100,
+      90: 150,
+      180: 300,
+      365: 1000
+    };
     if (xpGain.containsKey(newStreak) && newStreak != storedStreak) {
       final currentXp = sessionBox.get(xpKey) as int? ?? 0;
       await sessionBox.put(xpKey, currentXp + xpGain[newStreak]!);
@@ -99,24 +108,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadUserInfo() async {
     final sessionBox = Hive.box('session');
     final metricsBox = Hive.box('dailyMetrics');
-    final petBox     = Hive.box('petNames');
-    final userId     = sessionBox.get('loggedInUser') as String?;
+    final petBox = Hive.box('petNames');
+    final userId = sessionBox.get('loggedInUser') as String?;
     if (userId != null) {
       final storedPetName = petBox.get(userId) as String?;
       final engine = InsightsEngine(metricsBox);
       final score = await engine.getPredictedScore(userId, DateRange.daily);
       String mood = 'Normal';
-      if (score >= 80) mood = 'Excited';
-      else if (score >= 60) mood = 'Happy';
-      else if (score >= 40) mood = 'Okay';
-      else if (score >= 20) mood = 'Tired';
+      if (score >= 80)
+        mood = 'Excited';
+      else if (score >= 60)
+        mood = 'Happy';
+      else if (score >= 40)
+        mood = 'Okay';
+      else if (score >= 20)
+        mood = 'Tired';
       else if (score > 0) mood = 'Sad';
 
       if (mounted) {
         setState(() {
           _username = userId;
-          _petName  = storedPetName;
-          _petMood  = score == 0 ? 'Normal' : mood;
+          _petName = storedPetName;
+          _petMood = score == 0 ? 'Normal' : mood;
         });
       }
     }
@@ -133,19 +146,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
           decoration: const InputDecoration(hintText: 'Enter pet name'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: const Text('Save')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+              child: const Text('Save')),
         ],
       ),
     );
     if (newName != null && newName.isNotEmpty && newName != _petName) {
       final sessionBox = Hive.box('session');
-      final petBox     = Hive.box('petNames');
-      final userId     = sessionBox.get('loggedInUser') as String?;
+      final petBox = Hive.box('petNames');
+      final userId = sessionBox.get('loggedInUser') as String?;
       if (userId != null) {
         await petBox.put(userId, newName);
 
-        final xpKey    = '${userId}_totalXp';
+        final xpKey = '${userId}_totalXp';
         final currentXp = sessionBox.get(xpKey) as int? ?? 0;
         await sessionBox.put(xpKey, currentXp + 10);
 
@@ -171,7 +187,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         margin: const EdgeInsets.symmetric(vertical: 5),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: bgColor ?? (isDark ? const Color(0xFF2C2F36) : Colors.grey[200]),
+          color:
+              bgColor ?? (isDark ? const Color(0xFF2C2F36) : Colors.grey[200]),
           borderRadius: BorderRadius.circular(30),
           border: Border.all(color: Colors.black, width: 1.5),
         ),
@@ -191,7 +208,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final textColor = Theme.of(context).textTheme.bodyMedium?.color;
-    final fontSize  = Theme.of(context).textTheme.bodyMedium?.fontSize;
+    final fontSize = Theme.of(context).textTheme.bodyMedium?.fontSize;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -210,12 +227,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Row(
                   children: [
                     Container(
-                      width: 100, height: 100,
+                      width: 100,
+                      height: 100,
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.black, width: 2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.person, size: 60, color: Colors.black),
+                      child: const Icon(Icons.person,
+                          size: 60, color: Colors.black),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -223,54 +242,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           _buildLabelButton('$_username', fontSize: fontSize),
-                          _buildLabelButton('Current Streak: $_streak', fontSize: fontSize),
+                          _buildLabelButton('Current Streak: $_streak',
+                              fontSize: fontSize),
                           _buildLabelButton(
                             'Edit Details',
-                            bgColor: Theme.of(context).brightness == Brightness.dark
-                                ? const Color(0xFF40D404)
-                                : const Color(0xFFB6FFB1),
+                            bgColor:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? const Color(0xFF40D404)
+                                    : const Color(0xFFB6FFB1),
                             fontSize: fontSize,
                             onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (c) => const EditDetailsScreen()))
+                              Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (c) =>
+                                              const EditDetailsScreen()))
                                   .then((_) => _loadUserInfo());
                             },
                           ),
                         ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  border: Border.all(color: Colors.black, width: 2),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _buildLabelButton(
-                        'View Badges',
-                        bgColor: Theme.of(context).brightness == Brightness.dark
-                            ? const Color(0xFF40D404)
-                            : const Color(0xFFB6FFB1),
-                        fontSize: fontSize,
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BadgesScreen())),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _buildLabelButton(
-                        'Goals',
-                        bgColor: Theme.of(context).brightness == Brightness.dark
-                            ? const Color(0xFF40D404)
-                            : const Color(0xFFB6FFB1),
-                        fontSize: fontSize,
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GoalsScreen())),
                       ),
                     ),
                   ],
@@ -285,32 +275,109 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   border: Border.all(color: Colors.black, width: 2),
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: Row(
+                child: Column(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black, width: 2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
-                        child: Image.asset('assets/images/pet.jpg', width: 100, height: 100, fit: BoxFit.cover),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _buildLabelButton(
-                            _petName == null || _petName!.isEmpty ? 'Set your pet name' : '$_petName',
-                            fontSize: fontSize,
-                            onTap: _renamePet,
+                    Row(
+                      children: [
+                        // Pet Image/Icon (Left Side)
+                        Container(
+                          width: 100,
+                          height: 100,
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            border:
+                                Border.all(color: Colors.grey[400]!, width: 1),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          _buildLabelButton('Customize Pet', fontSize: fontSize, textColor: Colors.grey),
-                          _buildLabelButton('Current Mood: $_petMood', fontSize: fontSize),
-                        ],
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(14),
+                            child: Image.asset('assets/images/pet.jpg',
+                                width: 96, height: 96, fit: BoxFit.cover),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+
+                        // Pet Details (Right Side)
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Pet Name field
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                      color: Colors.grey[300]!, width: 1),
+                                ),
+                                child: Text(
+                                  _petName == null || _petName!.isEmpty
+                                      ? 'Set your pet name'
+                                      : '$_petName',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontFamily: 'HappyMonkey',
+                                    fontSize: fontSize,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+
+                              // Current Mood field
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                      color: Colors.grey[300]!, width: 1),
+                                ),
+                                child: Text(
+                                  _petMood,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontFamily: 'HappyMonkey',
+                                    fontSize: fontSize,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Pet List Button (Bottom)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              const Color(0xFFB6FFB1), // Light green
+                          foregroundColor: Colors.black87,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: BorderSide(color: Colors.black, width: 1),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          elevation: 2,
+                        ),
+                        onPressed: () {}, // Removed _renamePet
+                        child: Text(
+                          'Pet List',
+                          style: TextStyle(
+                            fontSize: fontSize,
+                            fontFamily: 'HappyMonkey',
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -335,6 +402,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               ),
+
+              // View Badges and Goals moved to bottom
+              Container(
+                margin: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  border: Border.all(color: Colors.black, width: 2),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildLabelButton(
+                        'View Badges',
+                        bgColor: Theme.of(context).brightness == Brightness.dark
+                            ? const Color(0xFF40D404)
+                            : const Color(0xFFB6FFB1),
+                        fontSize: fontSize,
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const BadgesScreen())),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildLabelButton(
+                        'Goals',
+                        bgColor: Theme.of(context).brightness == Brightness.dark
+                            ? const Color(0xFF40D404)
+                            : const Color(0xFFB6FFB1),
+                        fontSize: fontSize,
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const GoalsScreen())),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               const SizedBox(height: 30),
             ],
           ),
@@ -349,7 +459,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, -2))],
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, -2))
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -364,10 +476,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildNavItem({required IconData icon, required int index, bool isHome = false}) {
+  Widget _buildNavItem(
+      {required IconData icon, required int index, bool isHome = false}) {
     final isSelected = (_selectedIndex == index);
     final fillColor = isSelected
-        ? (Theme.of(context).brightness == Brightness.dark ? const Color(0xFF40D404) : const Color(0xFFB6FFB1))
+        ? (Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF40D404)
+            : const Color(0xFFB6FFB1))
         : Theme.of(context).colorScheme.surface;
     final iconColor = isSelected ? Colors.black : Colors.grey[700];
 
@@ -378,13 +493,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
         customBorder: const CircleBorder(),
         onTap: () {
           setState(() => _selectedIndex = index);
-          if (index == 0) Navigator.pushReplacement(context, createFadeRoute(const SettingsScreen()));
-          if (index == 1) Navigator.pushReplacement(context, createFadeRoute(const InsightsScreen()));
-          if (index == 2) Navigator.pushReplacement(context, createFadeRoute(const HomeScreen()));
-          if (index == 3) Navigator.pushReplacement(context, createFadeRoute(const ActivitiesScreen()));
-          if (index == 4) Navigator.pushReplacement(context, createFadeRoute(const ProfileScreen()));
+          if (index == 0)
+            Navigator.pushReplacement(
+                context, createFadeRoute(const SettingsScreen()));
+          if (index == 1)
+            Navigator.pushReplacement(
+                context, createFadeRoute(const InsightsScreen()));
+          if (index == 2)
+            Navigator.pushReplacement(
+                context, createFadeRoute(const HomeScreen()));
+          if (index == 3)
+            Navigator.pushReplacement(
+                context, createFadeRoute(const ActivitiesScreen()));
+          if (index == 4)
+            Navigator.pushReplacement(
+                context, createFadeRoute(const ProfileScreen()));
         },
-        child: Container(width: 50, height: 50, decoration: BoxDecoration(shape: BoxShape.circle, color: fillColor), child: Icon(icon, color: iconColor)),
+        child: Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: fillColor),
+            child: Icon(icon, color: iconColor)),
       ),
     );
   }

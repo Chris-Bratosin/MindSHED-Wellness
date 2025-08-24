@@ -97,7 +97,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        automaticallyImplyLeading: false,
         title: Text(
           'Notifications',
           style: TextStyle(
@@ -113,17 +112,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           children: [
             Expanded(
               child: notifications.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No notifications yet.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'HappyMonkey',
-                          fontSize: fontSize,
-                          color: textColor?.withOpacity(0.6),
-                        ),
-                      ),
-                    )
+                  ? _buildEmptyNotificationsState(fontSize)
                   : ListView.builder(
                       itemCount: notifications.length,
                       itemBuilder: (context, index) {
@@ -163,20 +152,58 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     ),
             ),
             const SizedBox(height: 20),
-            _buildToggleSection(theme, textColor, fontSize),
+            _buildSettingsSection(fontSize),
             const SizedBox(height: 20),
-            _buildBackButton(fontSize),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildToggleSection(ThemeData theme, Color? textColor, double fontSize) {
+  Widget _buildEmptyNotificationsState(double fontSize) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.notifications_off_outlined,
+            size: 48,
+            color: Colors.grey.shade600,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'No notifications yet',
+            style: TextStyle(
+              fontFamily: 'HappyMonkey',
+              fontSize: fontSize + 1,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Set up your daily reminders and custom sounds in settings.',
+            style: TextStyle(
+              fontSize: fontSize - 1,
+              color: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.color
+                  ?.withOpacity(0.7),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsSection(double fontSize) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: theme.cardColor,
+        color: Theme.of(context).cardColor,
         border: Border.all(color: Colors.black),
         borderRadius: BorderRadius.circular(15),
       ),
@@ -185,23 +212,47 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           _buildToggleRow(
             label: 'Mute Notifications',
             value: muteNotifications,
-            textColor: textColor,
+            textColor: Theme.of(context).textTheme.bodyMedium?.color,
             fontSize: fontSize,
             onChanged: (val) async {
               setState(() => muteNotifications = val);
               await _handleNotificationToggle(val);
             },
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 20),
           _buildToggleRow(
             label: 'Mute Sounds',
             value: muteSounds,
-            textColor: textColor,
+            textColor: Theme.of(context).textTheme.bodyMedium?.color,
             fontSize: fontSize,
             onChanged: (val) async {
               setState(() => muteSounds = val);
               await _handleSoundToggle(val);
             },
+          ),
+          const SizedBox(height: 24),
+          // Customize button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => _showSoundCustomization(context, fontSize),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.black,
+                side: const BorderSide(color: Colors.black, width: 1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              child: Text(
+                'Customize Sounds',
+                style: TextStyle(
+                  fontFamily: 'HappyMonkey',
+                  fontSize: fontSize - 1,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -243,32 +294,88 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  Widget _buildBackButton(double fontSize) {
-    return InkWell(
-      onTap: () {
-        Navigator.pushReplacement(
-          context,
-          createFadeRoute(const SettingsScreen()),
+  void _showSoundCustomization(BuildContext context, double fontSize) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(color: Colors.black, width: 2),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Customize Sounds',
+                  style: TextStyle(
+                    fontFamily: 'HappyMonkey',
+                    fontSize: fontSize + 2,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _buildNotificationToggle('App Sounds', true, fontSize),
+                const SizedBox(height: 8),
+                _buildNotificationToggle(
+                    'Notification Sounds', false, fontSize),
+                const SizedBox(height: 8),
+                _buildNotificationToggle('Ambient Audio', true, fontSize),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFB6FFB1),
+                    foregroundColor: Colors.black,
+                    side: const BorderSide(color: Colors.black, width: 1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    'Done',
+                    style: TextStyle(
+                      fontFamily: 'HappyMonkey',
+                      fontSize: fontSize,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-        decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? const Color(0xFF40D404)
-              : const Color(0xFFB6FFB1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.black),
-        ),
-        child: Text(
-          'Back',
+    );
+  }
+
+  Widget _buildNotificationToggle(
+      String label, bool initialValue, double fontSize) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
           style: TextStyle(
             fontFamily: 'HappyMonkey',
             fontSize: fontSize,
-            color: Colors.black,
+            color: Theme.of(context).textTheme.bodyMedium?.color,
           ),
         ),
-      ),
+        Switch(
+          value: initialValue,
+          onChanged: (value) {
+            // Placeholder logic for now
+          },
+          activeColor: const Color(0xFFB6FFB1),
+          inactiveThumbColor: Colors.grey.shade400,
+          inactiveTrackColor: Colors.grey.shade300,
+        ),
+      ],
     );
   }
 }

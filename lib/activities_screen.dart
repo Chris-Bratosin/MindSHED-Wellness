@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:mindshed_app/input_metrics_screen.dart';
 import 'home_screen.dart';
@@ -89,52 +88,60 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            children: [
-              _buildActivityCard(Icons.menu_book, "My\nJournal", fontSize, () {
-                setState(() {
-                  showJournalScreen = true;
-                });
-              }),
-              _buildActivityCard(Icons.cloud, "Meditation", fontSize, () {
-                setState(() {
-                  showGuidedBreathingScreen = true;
-                });
-              }),
-              _buildActivityCard(Icons.favorite, "Self\nCare", fontSize, () {
-                setState(() {
-                  showSelfCareScreen = true;
-                });
-              }),
-              _buildActivityCard(Icons.quiz, "Quizzes", fontSize, () {
-                setState(() {
-                  showQuizScreen = true;
-                });
-              }),
-            ],
-          ),
           const SizedBox(height: 20),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              double cardWidth = (constraints.maxWidth - 16) / 2;
-              double cardHeight = cardWidth; 
-
-              return Center(
-                child: SizedBox(
-                  width: cardWidth,
-                  height: cardHeight,
-                  child: _buildActivityCard(Icons.show_chart, "Input\nData", fontSize, () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const InputMetricsScreen()),
-                    );
-                  }),
-                ),
+          _buildActivityButton(
+            Icons.menu_book,
+            "My Journal",
+            fontSize,
+            () {
+              setState(() {
+                showJournalScreen = true;
+              });
+            },
+          ),
+          const SizedBox(height: 16),
+          _buildActivityButton(
+            Icons.psychology,
+            "Guided Breathing",
+            fontSize,
+            () {
+              setState(() {
+                showGuidedBreathingScreen = true;
+              });
+            },
+          ),
+          const SizedBox(height: 16),
+          _buildActivityButton(
+            Icons.people,
+            "Self Care",
+            fontSize,
+            () {
+              setState(() {
+                showSelfCareScreen = true;
+              });
+            },
+          ),
+          const SizedBox(height: 16),
+          _buildActivityButton(
+            Icons.quiz,
+            "Quizzes",
+            fontSize,
+            () {
+              setState(() {
+                showQuizScreen = true;
+              });
+            },
+          ),
+          const SizedBox(height: 16),
+          _buildActivityButton(
+            Icons.show_chart,
+            "Input Data",
+            fontSize,
+            () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const InputMetricsScreen()),
               );
             },
           ),
@@ -143,39 +150,48 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
     );
   }
 
-  Widget _buildActivityCard(
+  Widget _buildActivityButton(
       IconData icon, String label, double? fontSize, VoidCallback onTap) {
-
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return InkWell(
       onTap: onTap,
       child: Material(
-        elevation: 3,
+        elevation: 2,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-          side: const BorderSide(color: Colors.black, width: 2),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Container(
+          width: double.infinity,
+          height: 70,
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF40D404) : const Color(0xFFB6FFB1),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: Colors.black, size: 48),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'HappyMonkey',
-                  fontSize: fontSize,
-                  color: Colors.black87,
-                ),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
               ),
             ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Icon(icon, color: Colors.black, size: 28),
+                const SizedBox(width: 16),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontFamily: 'HappyMonkey',
+                    fontSize: fontSize ?? 16,
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

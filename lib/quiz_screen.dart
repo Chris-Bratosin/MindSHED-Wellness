@@ -10,39 +10,131 @@ class QuizScreen extends StatefulWidget {
 class _QuizScreenState extends State<QuizScreen> {
   final Map<String, List<Map<String, dynamic>>> quizData = {
     "Learn about your stress": [
-      {"question": "What is a common sign of stress?", "options": ["Headaches", "Hunger", "Sleepiness"], "answer": "Headaches"},
-      {"question": "How can you reduce stress?", "options": ["Deep breathing", "Skipping meals", "Watching TV"], "answer": "Deep breathing"},
-      {"question": "What hormone is released during stress?", "options": ["Cortisol", "Insulin", "Serotonin"], "answer": "Cortisol"},
+      {
+        "question": "What is a common sign of stress?",
+        "options": ["Headaches", "Hunger", "Sleepiness"],
+        "answer": "Headaches"
+      },
+      {
+        "question": "How can you reduce stress?",
+        "options": ["Deep breathing", "Skipping meals", "Watching TV"],
+        "answer": "Deep breathing"
+      },
+      {
+        "question": "What hormone is released during stress?",
+        "options": ["Cortisol", "Insulin", "Serotonin"],
+        "answer": "Cortisol"
+      },
     ],
     "How does your sleep affect you?": [
-      {"question": "Why is getting enough sleep important?", "options": ["It helps your mind and body recharge", "Because it is fun to stay in bed all day", "So you can skip meals and still have energy"], "answer": "It helps your mind and body recharge"},
-      {"question": "What is the recommended amount of sleep for adults?", "options": ["7-9 hours", "3-5 hours", "10-12 hours"], "answer": "7-9 hours"},
-      {"question": "What happens if you don't get enough sleep?", "options": ["Memory issues", "Increased energy", "Better concentration"], "answer": "Memory issues"},
+      {
+        "question": "Why is getting enough sleep important?",
+        "options": [
+          "It helps your mind and body recharge",
+          "Because it is fun to stay in bed all day",
+          "So you can skip meals and still have energy"
+        ],
+        "answer": "It helps your mind and body recharge"
+      },
+      {
+        "question": "What is the recommended amount of sleep for adults?",
+        "options": ["7-9 hours", "3-5 hours", "10-12 hours"],
+        "answer": "7-9 hours"
+      },
+      {
+        "question": "What happens if you don't get enough sleep?",
+        "options": [
+          "Memory issues",
+          "Increased energy",
+          "Better concentration"
+        ],
+        "answer": "Memory issues"
+      },
     ],
     "The importance of a balanced diet": [
-      {"question": "What does a balanced diet include?", "options": ["All food groups", "Only protein", "Only fruits"], "answer": "All food groups"},
-      {"question": "Why is water important?", "options": ["Hydration", "Color", "Flavour"], "answer": "Hydration"},
-      {"question": "What nutrient gives energy?", "options": ["Carbohydrates", "Vitamins", "Fiber"], "answer": "Carbohydrates"},
+      {
+        "question": "What does a balanced diet include?",
+        "options": ["All food groups", "Only protein", "Only fruits"],
+        "answer": "All food groups"
+      },
+      {
+        "question": "Why is water important?",
+        "options": ["Hydration", "Color", "Flavour"],
+        "answer": "Hydration"
+      },
+      {
+        "question": "What nutrient gives energy?",
+        "options": ["Carbohydrates", "Vitamins", "Fiber"],
+        "answer": "Carbohydrates"
+      },
     ],
     "Exercise and fitness habits": [
-      {"question": "How often should you exercise?", "options": ["3-5 times a week", "Once a month", "Every hour"], "answer": "3-5 times a week"},
-      {"question": "What type of exercise improves heart health?", "options": ["Cardio", "Stretching", "Sleep"], "answer": "Cardio"},
-      {"question": "What does strength training build?", "options": ["Muscle", "Fat", "Sweat"], "answer": "Muscle"},
+      {
+        "question": "How often should you exercise?",
+        "options": ["3-5 times a week", "Once a month", "Every hour"],
+        "answer": "3-5 times a week"
+      },
+      {
+        "question": "What type of exercise improves heart health?",
+        "options": ["Cardio", "Stretching", "Sleep"],
+        "answer": "Cardio"
+      },
+      {
+        "question": "What does strength training build?",
+        "options": ["Muscle", "Fat", "Sweat"],
+        "answer": "Muscle"
+      },
     ],
     "Digital wellbeing": [
-      {"question": "Too much screen time affects?", "options": ["Sleep", "Vision", "Both"], "answer": "Both"},
-      {"question": "What helps digital wellness?", "options": ["Taking breaks", "Binge watching", "Ignoring messages"], "answer": "Taking breaks"},
-      {"question": "What can reduce blue light exposure?", "options": ["Night mode", "More screen time", "Louder sound"], "answer": "Night mode"},
+      {
+        "question": "Too much screen time affects?",
+        "options": ["Sleep", "Vision", "Both"],
+        "answer": "Both"
+      },
+      {
+        "question": "What helps digital wellness?",
+        "options": ["Taking breaks", "Binge watching", "Ignoring messages"],
+        "answer": "Taking breaks"
+      },
+      {
+        "question": "What can reduce blue light exposure?",
+        "options": ["Night mode", "More screen time", "Louder sound"],
+        "answer": "Night mode"
+      },
     ],
     "Hydration awareness": [
-      {"question": "How much water should adults drink daily?", "options": ["2-3 liters", "1 cup", "10 liters"], "answer": "2-3 liters"},
-      {"question": "What are signs of dehydration?", "options": ["Dry mouth", "Energy boost", "Clear urine"], "answer": "Dry mouth"},
-      {"question": "Best drink for hydration?", "options": ["Water", "Coffee", "Soda"], "answer": "Water"},
+      {
+        "question": "How much water should adults drink daily?",
+        "options": ["2-3 liters", "1 cup", "10 liters"],
+        "answer": "2-3 liters"
+      },
+      {
+        "question": "What are signs of dehydration?",
+        "options": ["Dry mouth", "Energy boost", "Clear urine"],
+        "answer": "Dry mouth"
+      },
+      {
+        "question": "Best drink for hydration?",
+        "options": ["Water", "Coffee", "Soda"],
+        "answer": "Water"
+      },
     ],
     "Mental health check": [
-      {"question": "Which activity boosts mental health?", "options": ["Meditation", "Stressing", "Skipping sleep"], "answer": "Meditation"},
-      {"question": "Talking to friends helps?", "options": ["Yes", "No", "Never"], "answer": "Yes"},
-      {"question": "Which is a sign of burnout?", "options": ["Exhaustion", "Joy", "Excitement"], "answer": "Exhaustion"},
+      {
+        "question": "Which activity boosts mental health?",
+        "options": ["Meditation", "Stressing", "Skipping sleep"],
+        "answer": "Meditation"
+      },
+      {
+        "question": "Talking to friends helps?",
+        "options": ["Yes", "No", "Never"],
+        "answer": "Yes"
+      },
+      {
+        "question": "Which is a sign of burnout?",
+        "options": ["Exhaustion", "Joy", "Excitement"],
+        "answer": "Exhaustion"
+      },
     ],
   };
 
@@ -92,7 +184,8 @@ class _QuizScreenState extends State<QuizScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final double fontSize = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 18;
+    final double fontSize =
+        Theme.of(context).textTheme.bodyMedium?.fontSize ?? 18;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -104,82 +197,140 @@ class _QuizScreenState extends State<QuizScreen> {
             children: [
               if (selectedTopic == null && !quizCompleted) ...[
                 const SizedBox(height: 10),
-                Text(
-                  "Discover more about\nyour wellness",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: fontSize + 2,
-                    fontFamily: 'HappyMonkey',
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).textTheme.bodyMedium?.color,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                ...quizData.keys.map(
-                      (quiz) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark
-                            ? const Color(0xFF40D404)
-                            : Colors.green.shade200,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          side: const BorderSide(color: Colors.black, width: 2),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
-                        elevation: 2,
+
+                // Quiz selection container with white background
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.black, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.shade300,
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
                       ),
-                      onPressed: () => startQuiz(quiz),
-                      child: Text(
-                        quiz,
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        "Discover more about\nyour wellness",
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: fontSize,
+                          fontSize: fontSize + 2,
                           fontFamily: 'HappyMonkey',
-                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 24),
+                      ...quizData.keys.map(
+                        (quiz) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isDark
+                                  ? const Color(0xFF40D404)
+                                  : Colors.green.shade200,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                side: const BorderSide(
+                                    color: Colors.black, width: 2),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 14, horizontal: 24),
+                              elevation: 2,
+                            ),
+                            onPressed: () => startQuiz(quiz),
+                            child: Text(
+                              quiz,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: fontSize,
+                                fontFamily: 'HappyMonkey',
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ] else if (!quizCompleted) ...[
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).brightness == Brightness.dark
+                // Quiz title
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: isDark
                         ? const Color(0xFF40D404)
-                        : Colors.green.shade100,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.black),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    child: Text(
-                      "${currentQuestionIndex + 1}/${selectedQuestions.length}",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'HappyMonkey',
-                        color: Theme.of(context).textTheme.bodyMedium?.color,
-                      ),
+                        : Colors.green.shade200,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.black, width: 2),
+                  ),
+                  child: Text(
+                    selectedTopic!,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: fontSize + 2,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'HappyMonkey',
+                      color: Colors.black,
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 20),
+
+                // Question container
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.black),
+                    border: Border.all(color: Colors.black, width: 2),
                     boxShadow: isDark
                         ? []
-                        : [BoxShadow(color: Colors.grey.shade300, blurRadius: 6)],
+                        : [
+                            BoxShadow(
+                                color: Colors.grey.shade300, blurRadius: 6)
+                          ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Question counter at the top
+                      Container(
+                        alignment: Alignment.center,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF40D404)
+                              : Colors.green.shade100,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.black, width: 1),
+                        ),
+                        child: Text(
+                          "Question ${currentQuestionIndex + 1} of ${selectedQuestions.length}",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'HappyMonkey',
+                            fontSize: fontSize - 2,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+
+                      // Question text
                       Text(
                         selectedQuestions[currentQuestionIndex]['question'],
                         style: TextStyle(
@@ -189,29 +340,36 @@ class _QuizScreenState extends State<QuizScreen> {
                           color: Theme.of(context).textTheme.bodyMedium?.color,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
+
+                      // Multiple choice options
                       ...selectedQuestions[currentQuestionIndex]['options']
                           .map<Widget>((option) => ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Icon(
-                          selectedAnswer == option
-                              ? Icons.radio_button_checked
-                              : Icons.radio_button_off,
-                          color: Theme.of(context).iconTheme.color,
-                        ),
-                        title: Text(
-                          option,
-                          style: TextStyle(
-                            fontSize: fontSize,
-                            fontFamily: 'HappyMonkey',
-                            color: Theme.of(context).textTheme.bodyMedium?.color,
-                          ),
-                        ),
-                        onTap: () => setState(() {
-                          selectedAnswer = option;
-                        }),
-                      )),
-                      if (selectedAnswer != null)
+                                contentPadding: EdgeInsets.zero,
+                                leading: Icon(
+                                  selectedAnswer == option
+                                      ? Icons.radio_button_checked
+                                      : Icons.radio_button_off,
+                                  color: Theme.of(context).iconTheme.color,
+                                ),
+                                title: Text(
+                                  option,
+                                  style: TextStyle(
+                                    fontSize: fontSize,
+                                    fontFamily: 'HappyMonkey',
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.color,
+                                  ),
+                                ),
+                                onTap: () => setState(() {
+                                  selectedAnswer = option;
+                                }),
+                              )),
+
+                      if (selectedAnswer != null) ...[
+                        const SizedBox(height: 16),
                         Center(
                           child: ElevatedButton(
                             onPressed: nextQuestion,
@@ -222,17 +380,20 @@ class _QuizScreenState extends State<QuizScreen> {
                               ),
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 12),
-                              side: const BorderSide(color: Colors.black, width: 2),
+                              side: const BorderSide(
+                                  color: Colors.black, width: 2),
                             ),
                             child: Text(
                               "Next",
                               style: TextStyle(
                                 fontSize: fontSize,
                                 color: Colors.white,
+                                fontFamily: 'HappyMonkey',
                               ),
                             ),
                           ),
                         ),
+                      ],
                     ],
                   ),
                 ),
@@ -263,8 +424,8 @@ class _QuizScreenState extends State<QuizScreen> {
                     backgroundColor: Colors.red.shade400,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20)),
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 14),
                     side: const BorderSide(color: Colors.black, width: 2),
                   ),
                   child: Text(

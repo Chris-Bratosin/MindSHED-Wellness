@@ -198,7 +198,6 @@ class _InsightsScreenState extends State<InsightsScreen>
             style: TextStyle(
               fontFamily: 'HappyMonkey',
               fontSize: (fontSize ?? 16) + 2,
-              fontWeight: FontWeight.w600,
               color: textColor,
             ),
           ),
@@ -292,7 +291,6 @@ class _InsightsScreenState extends State<InsightsScreen>
             style: TextStyle(
               fontFamily: 'HappyMonkey',
               fontSize: (fontSize ?? 16) + 1,
-              fontWeight: FontWeight.w600,
               color: textColor,
             ),
             textAlign: TextAlign.center,
@@ -320,7 +318,6 @@ class _InsightsScreenState extends State<InsightsScreen>
           style: TextStyle(
             fontFamily: 'HappyMonkey',
             fontSize: (fontSize ?? 16) + 1,
-            fontWeight: FontWeight.w600,
             color: textColor,
           ),
         ),
@@ -373,7 +370,6 @@ class _InsightsScreenState extends State<InsightsScreen>
                   style: TextStyle(
                     fontFamily: 'HappyMonkey',
                     fontSize: (fontSize ?? 16) + 1,
-                    fontWeight: FontWeight.w600,
                     color: textColor,
                   ),
                 ),
@@ -503,7 +499,6 @@ class _InsightsScreenState extends State<InsightsScreen>
               color: isSelected
                   ? Colors.blue
                   : (isDark ? Colors.white70 : Colors.black54),
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             ),
             textAlign: TextAlign.center,
           ),
@@ -558,7 +553,6 @@ class _InsightsScreenState extends State<InsightsScreen>
                   style: TextStyle(
                     fontFamily: 'HappyMonkey',
                     fontSize: (fontSize ?? 16) + 1,
-                    fontWeight: FontWeight.w600,
                     color: textColor,
                   ),
                 ),
@@ -591,7 +585,6 @@ class _InsightsScreenState extends State<InsightsScreen>
                       style: TextStyle(
                         fontFamily: 'HappyMonkey',
                         fontSize: (fontSize ?? 16) + 2,
-                        fontWeight: FontWeight.w600,
                         color: textColor,
                       ),
                     ),
@@ -611,7 +604,6 @@ class _InsightsScreenState extends State<InsightsScreen>
                 _getScoreDescription(_overallScore),
                 style: TextStyle(
                   fontSize: (fontSize ?? 16) - 2,
-                  fontWeight: FontWeight.w600,
                   color: _gradeColour,
                 ),
               ),
@@ -695,7 +687,6 @@ class _InsightsScreenState extends State<InsightsScreen>
               style: TextStyle(
                 fontFamily: 'HappyMonkey',
                 fontSize: finalFontSize + 1,
-                fontWeight: FontWeight.w600,
                 color: finalTextColor,
               ),
             ),

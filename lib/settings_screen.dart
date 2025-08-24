@@ -33,7 +33,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           'Settings',
           style: TextStyle(
             fontFamily: 'HappyMonkey',
-            fontSize: fontSize,
+            fontSize: (fontSize ?? 18) + 6,
             color: Theme.of(context).textTheme.bodyMedium?.color,
           ),
         ),
@@ -246,7 +246,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildNavItem({required IconData icon, required int index, bool isHome = false}) {
+  Widget _buildNavItem(
+      {required IconData icon, required int index, bool isHome = false}) {
     final bool isSelected = (_selectedIndex == index);
     Color fillColor = isSelected
         ? (Theme.of(context).brightness == Brightness.dark
@@ -266,15 +267,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _selectedIndex = index;
           });
           if (index == 0) {
-            Navigator.pushReplacement(context, createFadeRoute(const SettingsScreen()));
+            Navigator.pushReplacement(
+                context, createFadeRoute(const SettingsScreen()));
           } else if (index == 1) {
-            Navigator.pushReplacement(context, createFadeRoute(const InsightsScreen()));
+            Navigator.pushReplacement(
+                context, createFadeRoute(const InsightsScreen()));
           } else if (index == 2) {
-            Navigator.pushReplacement(context, createFadeRoute(const HomeScreen()));
+            Navigator.pushReplacement(
+                context, createFadeRoute(const HomeScreen()));
           } else if (index == 3) {
-            Navigator.pushReplacement(context, createFadeRoute(const ActivitiesScreen()));
+            Navigator.pushReplacement(
+                context, createFadeRoute(const ActivitiesScreen()));
           } else if (index == 4) {
-            Navigator.pushReplacement(context, createFadeRoute(const ProfileScreen()));
+            Navigator.pushReplacement(
+                context, createFadeRoute(const ProfileScreen()));
           }
         },
         child: Container(

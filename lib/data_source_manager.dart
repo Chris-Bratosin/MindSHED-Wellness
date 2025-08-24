@@ -1,4 +1,5 @@
 import 'health_data_models.dart';
+import 'integrations/apple_health_integration.dart';
 
 // Manages connections to different health data sources
 class DataSourceManager {
@@ -53,6 +54,13 @@ class DataSourceManager {
   // Connect to Apple Health
   Future<bool> connectAppleHealth() async {
     try {
+      // Check if HealthKit is available
+      bool available = await AppleHealthIntegration.isAvailable();
+      if (!available) {
+        print('HealthKit is not available on this device');
+        return false;
+      }
+
       // Request permissions and authenticate
       bool success = await _requestAppleHealthPermissions();
       if (success) {
@@ -210,10 +218,12 @@ class DataSourceManager {
   // Private methods for actual implementations
 
   Future<bool> _requestAppleHealthPermissions() async {
-    // TODO: Implement Apple HealthKit permissions
-    // This would use the health_kit package
-    await Future.delayed(Duration(milliseconds: 500)); // Simulate API call
-    return true; // For now, always succeed
+    try {
+      return await AppleHealthIntegration.requestPermissions();
+    } catch (e) {
+      print('Error requesting Apple Health permissions: $e');
+      return false;
+    }
   }
 
   Future<bool> _requestGoogleFitPermissions() async {
@@ -245,23 +255,13 @@ class DataSourceManager {
   }
 
   Future<UnifiedHealthData> _fetchAppleHealthData(DateTimeRange range) async {
-    // TODO: Implement Apple Health data fetching
-    await Future.delayed(Duration(milliseconds: 300));
-
-    // Return mock data for now
-    return UnifiedHealthData.fromAppleHealth({
-      'steps': 8500,
-      'heartRate': 72.0,
-      'hrv': 45.0,
-      'activeMinutes': 45,
-      'exerciseSessions': 2,
-      'weeklyActivityConsistency': 0.8,
-      'sedentaryMinutes': 420,
-      'restDayAdherence': 0.9,
-      'socialInteractionScore': 0.7,
-      'supportNetworkScore': 0.8,
-      'age': 30,
-    });
+    try {
+      return await AppleHealthIntegration.fetchHealthData(range);
+    } catch (e) {
+      print('Error fetching Apple Health data: $e');
+      // Return empty data if fetch fails
+      return UnifiedHealthData.empty();
+    }
   }
 
   Future<UnifiedHealthData> _fetchGoogleFitData(DateTimeRange range) async {
