@@ -48,7 +48,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                           : 'Activities',
           style: TextStyle(
             fontFamily: 'HappyMonkey',
-            fontSize: fontSize,
+            fontSize: (fontSize ?? 18) + 6,
             color: textColor,
           ),
         ),
@@ -84,69 +84,88 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   }
 
   Widget _buildActivityGrid(double? fontSize) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        children: [
-          const SizedBox(height: 20),
-          _buildActivityButton(
-            Icons.menu_book,
-            "My Journal",
-            fontSize,
-            () {
-              setState(() {
-                showJournalScreen = true;
-              });
-            },
+    return Column(
+      children: [
+        const SizedBox(height: 20),
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.black, width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          _buildActivityButton(
-            Icons.psychology,
-            "Guided Breathing",
-            fontSize,
-            () {
-              setState(() {
-                showGuidedBreathingScreen = true;
-              });
-            },
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                _buildActivityButton(
+                  Icons.menu_book,
+                  "My Journal",
+                  fontSize,
+                  () {
+                    setState(() {
+                      showJournalScreen = true;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                _buildActivityButton(
+                  Icons.psychology,
+                  "Guided Breathing",
+                  fontSize,
+                  () {
+                    setState(() {
+                      showGuidedBreathingScreen = true;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                _buildActivityButton(
+                  Icons.people,
+                  "Self Care",
+                  fontSize,
+                  () {
+                    setState(() {
+                      showSelfCareScreen = true;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                _buildActivityButton(
+                  Icons.quiz,
+                  "Quizzes",
+                  fontSize,
+                  () {
+                    setState(() {
+                      showQuizScreen = true;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                _buildActivityButton(
+                  Icons.show_chart,
+                  "Input Data",
+                  fontSize,
+                  () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const InputMetricsScreen()),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
-          _buildActivityButton(
-            Icons.people,
-            "Self Care",
-            fontSize,
-            () {
-              setState(() {
-                showSelfCareScreen = true;
-              });
-            },
-          ),
-          const SizedBox(height: 16),
-          _buildActivityButton(
-            Icons.quiz,
-            "Quizzes",
-            fontSize,
-            () {
-              setState(() {
-                showQuizScreen = true;
-              });
-            },
-          ),
-          const SizedBox(height: 16),
-          _buildActivityButton(
-            Icons.show_chart,
-            "Input Data",
-            fontSize,
-            () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const InputMetricsScreen()),
-              );
-            },
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

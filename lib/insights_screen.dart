@@ -197,7 +197,7 @@ class _InsightsScreenState extends State<InsightsScreen>
             'Wellness Insights',
             style: TextStyle(
               fontFamily: 'HappyMonkey',
-              fontSize: (fontSize ?? 16) + 2,
+              fontSize: (fontSize ?? 16) + 6,
               color: textColor,
             ),
           ),
@@ -552,9 +552,10 @@ class _InsightsScreenState extends State<InsightsScreen>
                   'Wellness Score',
                   style: TextStyle(
                     fontFamily: 'HappyMonkey',
-                    fontSize: (fontSize ?? 16) + 1,
+                    fontSize: (fontSize ?? 16) > 20 ? 18 : (fontSize ?? 16) + 1,
                     color: textColor,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -584,35 +585,62 @@ class _InsightsScreenState extends State<InsightsScreen>
                       '$_overallScore%',
                       style: TextStyle(
                         fontFamily: 'HappyMonkey',
-                        fontSize: (fontSize ?? 16) + 2,
+                        fontSize: (fontSize ?? 16) > 20 ? 16 : (fontSize ?? 16),
                         color: textColor,
                       ),
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: _gradeColour.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: _gradeColour.withOpacity(0.3)),
-              ),
-              child: Text(
-                _getScoreDescription(_overallScore),
-                style: TextStyle(
-                  fontSize: (fontSize ?? 16) - 2,
-                  color: _gradeColour,
+            if (_overallScore > 0) ...[
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _gradeColour.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: _gradeColour.withOpacity(0.3)),
+                ),
+                child: Text(
+                  _getScoreDescription(_overallScore),
+                  style: TextStyle(
+                    fontSize: (fontSize ?? 16) > 20 ? 14 : (fontSize ?? 16) - 2,
+                    color: _gradeColour,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
                 ),
               ),
-            ),
+            ] else ...[
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                ),
+                child: Text(
+                  'No Data',
+                  style: TextStyle(
+                    fontSize: (fontSize ?? 16) > 20 ? 14 : (fontSize ?? 16) - 2,
+                    color: Colors.grey.shade600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
           ],
         ),
       );
 
   String _getScoreDescription(int score) {
+    if (score == 0) return 'No Data';
     if (score >= 80) return 'Excellent';
     if (score >= 60) return 'Good';
     if (score >= 40) return 'Fair';

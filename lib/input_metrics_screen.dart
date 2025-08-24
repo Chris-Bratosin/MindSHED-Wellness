@@ -91,8 +91,7 @@ class _InputMetricsScreenState extends State<InputMetricsScreen> {
           'Daily Wellness Tracker',
           style: TextStyle(
             fontFamily: 'HappyMonkey',
-            fontSize: fs + 2,
-            fontWeight: FontWeight.w600,
+            fontSize: fs + 6,
             color: Theme.of(ctx).textTheme.bodyMedium?.color,
           ),
         ),
