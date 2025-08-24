@@ -15,7 +15,14 @@ class _InputMetricsScreenState extends State<InputMetricsScreen> {
   Map<String, dynamic> _m = {};
   bool _busy = true;
 
-  final _mindfulness = ['Relaxation', 'Studying', 'Reading', 'Socialised'];
+  final _mindfulness = [
+    'Relaxation',
+    'Studying',
+    'Reading',
+    'Socialised',
+    'Meditation',
+    'Exercise'
+  ];
 
   @override
   void initState() {
@@ -64,61 +71,211 @@ class _InputMetricsScreenState extends State<InputMetricsScreen> {
 
   @override
   Widget build(BuildContext ctx) {
-    if (_busy) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    if (_uid == null) return const Scaffold(body: Center(child: Text('User not logged in')));
+    if (_busy) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (_uid == null) {
+      return const Scaffold(body: Center(child: Text('User not logged in')));
+    }
 
-    final fs     = Theme.of(ctx).textTheme.bodyMedium?.fontSize ?? 14.0;
-    final accent = Theme.of(ctx).colorScheme.primary;
+    final fs = Theme.of(ctx).textTheme.bodyMedium?.fontSize ?? 16.0;
+    final isDark = Theme.of(ctx).brightness == Brightness.dark;
 
     return Scaffold(
+      backgroundColor: Theme.of(ctx).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: Text('Input Metrics',
-            style: TextStyle(
-                fontFamily: 'HappyMonkey',
-                fontSize: fs,
-                color: Theme.of(ctx).textTheme.bodyMedium?.color,
-            )
+        title: Text(
+          'Daily Wellness Tracker',
+          style: TextStyle(
+            fontFamily: 'HappyMonkey',
+            fontSize: fs + 2,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(ctx).textTheme.bodyMedium?.color,
+          ),
+        ),
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            color: Theme.of(ctx).iconTheme.color,
+          ),
+          onPressed: () => Navigator.of(ctx).pop(),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: isDark
+                ? [
+                    const Color(0xFF1C1D22),
+                    const Color(0xFF2A2B30).withOpacity(0.8),
+                  ]
+                : [
+                    const Color(0xFFE8E8E8),
+                    Colors.white.withOpacity(0.9),
+                  ],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Column(
+            children: [
+              _buildMetricCard(
+                'Sleep Quality',
+                Icons.bedtime_rounded,
+                Colors.indigo,
+                _slider(
+                  valueKey: 'sleep_quality_val',
+                  displayKey: 'sleep_quality',
+                  min: 0,
+                  max: 12,
+                  divisions: 12,
+                  toLabel: _sleepBucket,
+                  accent: Colors.indigo,
+                  fontSize: fs,
+                ),
+                fs,
+                isDark,
+                compact: true,
+              ),
+              const SizedBox(height: 8),
+              _buildMetricCard(
+                'Hydration',
+                Icons.water_drop_rounded,
+                Colors.blue,
+                _slider(
+                  valueKey: 'hydration_val',
+                  displayKey: 'hydration',
+                  min: 0,
+                  max: 4,
+                  divisions: 8,
+                  toLabel: _hydrationBucket,
+                  accent: Colors.blue,
+                  fontSize: fs,
+                ),
+                fs,
+                isDark,
+                compact: true,
+              ),
+              const SizedBox(height: 8),
+              _buildMetricCard(
+                'Exercise',
+                Icons.fitness_center_rounded,
+                Colors.green,
+                _slider(
+                  valueKey: 'exercise_val',
+                  displayKey: 'exercise',
+                  min: 0,
+                  max: 120,
+                  divisions: 12,
+                  toLabel: _exerciseBucket,
+                  accent: Colors.green,
+                  fontSize: fs,
+                ),
+                fs,
+                isDark,
+                compact: true,
+              ),
+              const SizedBox(height: 8),
+              _buildMetricCard(
+                'Mood',
+                Icons.sentiment_satisfied_alt_rounded,
+                Colors.orange,
+                _moodRow(fs, Colors.orange),
+                fs,
+                isDark,
+                compact: true,
+              ),
+              const SizedBox(height: 8),
+              _buildMetricCard(
+                'Mindfulness Activities',
+                Icons.self_improvement_rounded,
+                Colors.purple,
+                _mindfulnessChips(fs, Colors.purple),
+                fs,
+                isDark,
+                compact: true,
+              ),
+              const SizedBox(height: 8),
+              _buildMetricCard(
+                'Meal Times',
+                Icons.restaurant_rounded,
+                Colors.red,
+                _mealRows(fs),
+                fs,
+                isDark,
+                compact: true,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMetricCard(
+    String title,
+    IconData icon,
+    Color color,
+    Widget child,
+    double fs,
+    bool isDark, {
+    bool compact = false,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(compact ? 6 : 12),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2A2B30) : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black26 : Colors.black.withOpacity(0.08),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.grey.shade200,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _card('Sleep', _slider(
-            valueKey: 'sleep_quality_val',
-            displayKey: 'sleep_quality',
-            min: 0,
-            max: 12,
-            divisions: 12,
-            toLabel: _sleepBucket,
-            accent: accent,
-            fontSize: fs,
-          )),
-          _card('Hydration', _slider(
-            valueKey: 'hydration_val',
-            displayKey: 'hydration',
-            min: 0,
-            max: 4,
-            divisions: 8,
-            toLabel: _hydrationBucket,
-            accent: accent,
-            fontSize: fs,
-          )),
-          _card('Exercise', _slider(
-            valueKey: 'exercise_val',
-            displayKey: 'exercise',
-            min: 0,
-            max: 120,
-            divisions: 12,
-            toLabel: _exerciseBucket,
-            accent: accent,
-            fontSize: fs,
-          )),
-          _card('Mood',       _moodRow(fs, accent)),
-          _card('Mindfulness',_mindfulnessChips(fs, accent)),
-          _card('Meal Times', _mealRows(fs), compact: true),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(
+                  icon,
+                  color: color,
+                  size: 16,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontFamily: 'HappyMonkey',
+                    fontSize: fs,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          child,
         ],
       ),
     );
@@ -143,8 +300,18 @@ class _InputMetricsScreenState extends State<InputMetricsScreen> {
           data: SliderThemeData(
             trackHeight: 2,
             activeTrackColor: accent,
-            inactiveTrackColor: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+            inactiveTrackColor:
+                isDark ? Colors.grey.shade700 : Colors.grey.shade300,
             thumbColor: accent,
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 4),
+            overlayShape: const RoundSliderOverlayShape(overlayRadius: 8),
+            valueIndicatorShape: const PaddleSliderValueIndicatorShape(),
+            valueIndicatorColor: accent,
+            valueIndicatorTextStyle: const TextStyle(
+              color: Colors.white,
+              fontSize: 9,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           child: Slider(
             value: v,
@@ -156,31 +323,65 @@ class _InputMetricsScreenState extends State<InputMetricsScreen> {
             onChangeEnd: (x) => _save(displayKey, toLabel(x)),
           ),
         ),
-        Text(
-          _m[displayKey] ?? '—',
-          style: TextStyle(fontSize: fontSize, color: Theme.of(context).textTheme.bodyMedium?.color),
+        const SizedBox(height: 2),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: accent.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: accent.withOpacity(0.3)),
+          ),
+          child: Text(
+            _m[displayKey] ?? '—',
+            style: TextStyle(
+              fontSize: fontSize - 1,
+              fontWeight: FontWeight.w600,
+              color: accent,
+            ),
+          ),
         ),
       ],
     );
   }
 
   Widget _moodRow(double fs, Color accent) {
-    const moods = {'):': 'Sad', '|:': 'Neutral', '(:': 'Happy'};
-    final sel   = _m['mindset'] as String?;
+    const moods = {
+      '😢': 'Sad',
+      '😐': 'Neutral',
+      '😊': 'Happy',
+    };
+    final sel = _m['mindset'] as String?;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: moods.entries.map((e) {
         final chosen = e.value == sel;
         return GestureDetector(
           onTap: () => _save('mindset', chosen ? null : e.value),
-          child: Container(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: chosen ? accent : Colors.transparent,
-              border: Border.all(color: Colors.black),
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: chosen ? accent : Colors.grey.shade400,
+                width: 1,
+              ),
+              boxShadow: chosen
+                  ? [
+                      BoxShadow(
+                        color: accent.withOpacity(0.3),
+                        blurRadius: 3,
+                        offset: const Offset(0, 1),
+                      ),
+                    ]
+                  : null,
             ),
-            child: Text(e.key, style: TextStyle(fontSize: 24)),
+            child: Text(
+              e.key,
+              style: TextStyle(fontSize: 20),
+            ),
           ),
         );
       }).toList(),
@@ -188,89 +389,143 @@ class _InputMetricsScreenState extends State<InputMetricsScreen> {
   }
 
   Widget _mindfulnessChips(double fs, Color accent) {
-    final sel = (_m['mindfulness_activities'] as List?)?.cast<String>() ?? <String>[];
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: _mindfulness.map((o) {
-        final chosen = sel.contains(o);
-        return ChoiceChip(
-          label: Text(o, style: TextStyle(fontSize: fs)),
-          selected: chosen,
-          selectedColor: accent,
-          onSelected: (_) {
-            final list = List<String>.from(sel);
-            chosen ? list.remove(o) : list.add(o);
-            _save('mindfulness_activities', list);
-          },
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _mealRows(double fs) => Column(children: [
-    _mealRow('Breakfast','breakfast_time',fs),
-    _mealRow('Lunch',     'lunch_time',    fs),
-    _mealRow('Dinner',    'dinner_time',   fs),
-  ]);
-
-  Widget _mealRow(String lbl, String key, double fs) {
-    final val = _m[key] as String?;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: ListTile(
-        dense: true,
-        contentPadding: EdgeInsets.zero,
-        title: Text(lbl, style: TextStyle(fontSize: fs)),
-        trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-          if (val != null)
-            IconButton(
-              icon: const Icon(Icons.close, size: 18),
-              splashRadius: 16,
-              onPressed: () => _save(key, null),
+    final sel =
+        (_m['mindfulness_activities'] as List?)?.cast<String>() ?? <String>[];
+    return SizedBox(
+      width: double.infinity,
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 8,
+        runSpacing: 8,
+        children: _mindfulness.map((o) {
+          final chosen = sel.contains(o);
+          return GestureDetector(
+            onTap: () {
+              final list = List<String>.from(sel);
+              chosen ? list.remove(o) : list.add(o);
+              _save('mindfulness_activities', list);
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: chosen ? accent.withOpacity(0.15) : Colors.transparent,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color:
+                      chosen ? accent.withOpacity(0.6) : Colors.grey.shade300,
+                  width: chosen ? 1.5 : 1,
+                ),
+                boxShadow: chosen
+                    ? [
+                        BoxShadow(
+                          color: accent.withOpacity(0.2),
+                          blurRadius: 3,
+                          offset: const Offset(0, 1),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Text(
+                o,
+                style: TextStyle(
+                  fontSize: fs - 2,
+                  fontWeight: chosen ? FontWeight.w600 : FontWeight.normal,
+                  color: chosen
+                      ? accent
+                      : Theme.of(context).textTheme.bodyMedium?.color,
+                ),
+              ),
             ),
-          Text(val ?? '--:--', style: TextStyle(fontSize: fs)),
-        ]),
-        onTap: () async {
-          final now  = TimeOfDay.now();
-          final init = val == null
-              ? now
-              : TimeOfDay(hour: int.parse(val.split(':')[0]), minute: int.parse(val.split(':')[1]));
-          final t    = await showTimePicker(context: context, initialTime: init);
-          if (t != null) {
-            final hh = t.hour.toString().padLeft(2, '0');
-            final mm = t.minute.toString().padLeft(2, '0');
-            _save(key, '$hh:$mm');
-          }
-        },
+          );
+        }).toList(),
       ),
     );
   }
 
-  Widget _card(String title, Widget child, {bool compact = false}) => Container(
-    margin: const EdgeInsets.symmetric(vertical: 4),
-    padding: EdgeInsets.fromLTRB(10, compact ? 6 : 10, 10, compact ? 6 : 10),
-    decoration: BoxDecoration(
-      color: Theme.of(context).brightness == Brightness.dark
-          ? const Color(0xFF2C2F36)
-          : Colors.grey.shade200,
-      border: Border.all(color: Colors.black, width: 1),
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontFamily: 'HappyMonkey',
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-          ),
+  Widget _mealRows(double fs) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _mealCircle('Breakfast', 'breakfast_time', fs, Icons.wb_sunny_rounded,
+              Colors.orange),
+          _mealCircle('Lunch', 'lunch_time', fs, Icons.wb_sunny_outlined,
+              Colors.yellow.shade700),
+          _mealCircle('Dinner', 'dinner_time', fs, Icons.nightlight_round,
+              Colors.indigo),
+        ],
+      );
+
+  Widget _mealCircle(
+      String lbl, String key, double fs, IconData icon, Color color) {
+    final val = _m[key] as String?;
+
+    return GestureDetector(
+      onTap: () async {
+        final now = TimeOfDay.now();
+        final init = val == null
+            ? now
+            : TimeOfDay(
+                hour: int.parse(val.split(':')[0]),
+                minute: int.parse(val.split(':')[1]));
+        final t = await showTimePicker(context: context, initialTime: init);
+        if (t != null) {
+          final hh = t.hour.toString().padLeft(2, '0');
+          final mm = t.minute.toString().padLeft(2, '0');
+          _save(key, '$hh:$mm');
+        }
+      },
+      child: Container(
+        width: 80,
+        height: 80,
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(40),
+          border: Border.all(color: color.withOpacity(0.3), width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.2),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        const SizedBox(height: 4),
-        child,
-      ],
-    ),
-  );
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 4),
+            Text(
+              val ?? lbl,
+              style: TextStyle(
+                fontSize: val != null ? fs - 2 : fs - 1,
+                fontWeight: FontWeight.w600,
+                color: val != null
+                    ? color
+                    : Theme.of(context).textTheme.bodyMedium?.color,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            if (val != null) ...[
+              const SizedBox(height: 2),
+              GestureDetector(
+                onTap: () => _save(key, null),
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.close,
+                    size: 12,
+                    color: Colors.red.shade600,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
 }

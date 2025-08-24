@@ -14,7 +14,7 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		sf05d5AMW7MepAlM8Zx0nBqbxXA=
+		ZstSPUkhi6KWnQt0ZIhxGhbolXU=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -34,17 +34,13 @@
 		</data>
 		<key>Modules/path_provider_foundation.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		gNQ4PoSSn9zr7xZqBXmC1xdmW3I=
+		rIjiZIUDK3EIOEOk2qHtmJ5rwPM=
 		</data>
 	</dict>
 	<key>files2</key>
 	<dict>
 		<key>Headers/path_provider_foundation-Swift.h</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			EnUHs1jGrzpgOSdO/03YFkWxpGo=
-			</data>
 			<key>hash2</key>
 			<data>
 			wRfQIWhc8TAvlwItPdbcghVsrWWaw6fUBmjVAszY/hI=
@@ -52,10 +48,6 @@
 		</dict>
 		<key>Headers/path_provider_foundation-umbrella.h</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			HLPUH7a1+Uud1CEb8ZVbUJlVow0=
-			</data>
 			<key>hash2</key>
 			<data>
 			zQc9a/y7t7MqxTgSSmpfImDb6DSiKF26gJFqk0CuTBE=
@@ -63,10 +55,6 @@
 		</dict>
 		<key>Modules/module.modulemap</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			4ou7sfZJMUritXkWYrNLe8ROvJ8=
-			</data>
 			<key>hash2</key>
 			<data>
 			GljPXu0mFl3W6UpwpsufQgltdn4I8vCubbMMs3ACbiw=
@@ -74,10 +62,6 @@
 		</dict>
 		<key>Modules/path_provider_foundation.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			2RfmA3jxEgnM1zEkGWYhTVKrSdc=
-			</data>
 			<key>hash2</key>
 			<data>
 			pYdbVa129hG9XefwH4ANVspVjwLZxNhVytnG190VR5M=
@@ -85,10 +69,6 @@
 		</dict>
 		<key>Modules/path_provider_foundation.swiftmodule/x86_64-apple-ios-simulator.abi.json</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			gcwBsH4BgyFY4sVtNt+/xOKS3vY=
-			</data>
 			<key>hash2</key>
 			<data>
 			Qnesa0n4URGWAopawg9bGx36dUwkYV00BoCJ8LFzlyg=
@@ -96,10 +76,6 @@
 		</dict>
 		<key>Modules/path_provider_foundation.swiftmodule/x86_64-apple-ios-simulator.swiftdoc</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			fWhXyMPUWL4hlS5jP3q/LZEJ6t8=
-			</data>
 			<key>hash2</key>
 			<data>
 			1/MqF30VZ3rvJ/+G7kcAyIuk011zr+stwgEbwvu+BAw=
@@ -107,13 +83,9 @@
 		</dict>
 		<key>Modules/path_provider_foundation.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			gNQ4PoSSn9zr7xZqBXmC1xdmW3I=
-			</data>
 			<key>hash2</key>
 			<data>
-			bpHPD9dQmORsj7byPlQJ4GhpMxWaBNQT5vLQjkNwPTc=
+			/6pXT73ElGH4pIAWt+G1cYmx8P+sctOT4Fw0zXZltpM=
 			</data>
 		</dict>
 	</dict>
