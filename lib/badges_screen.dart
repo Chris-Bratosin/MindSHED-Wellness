@@ -180,7 +180,7 @@ class _BadgesScreenState extends State<BadgesScreen> with WidgetsBindingObserver
                   ],
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),

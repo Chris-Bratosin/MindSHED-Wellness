@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:hive/hive.dart';
 
 class SelfCareScreen extends StatefulWidget {
-  const SelfCareScreen({Key? key}) : super(key: key);
+  const SelfCareScreen({super.key});
 
   @override
   State<SelfCareScreen> createState() => _SelfCareScreenState();

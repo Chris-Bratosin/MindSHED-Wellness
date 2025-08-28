@@ -7,14 +7,14 @@ class HealthPackageTest {
 
     // List all available health data types
     print('Available Health Data Types:');
-    HealthDataType.values.forEach((type) {
+    for (var type in HealthDataType.values) {
       print('  ${type.toString()}');
-    });
+    }
 
     print('\nAvailable Health Units:');
-    HealthDataUnit.values.forEach((unit) {
+    for (var unit in HealthDataUnit.values) {
       print('  ${unit.toString()}');
-    });
+    }
 
     print('\nAvailable Workout Types:');
     // WorkoutHealthType.values.forEach((type) {

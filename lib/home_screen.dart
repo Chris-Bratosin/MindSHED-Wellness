@@ -11,7 +11,7 @@ import 'settings_screen.dart';
 import 'transition_helper.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -421,21 +421,26 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(25),
           onTap: () {
             setState(() => _selectedIndex = idx);
-            if (idx == 0)
+            if (idx == 0) {
               Navigator.pushReplacement(
                   context, createFadeRoute(const SettingsScreen()));
-            if (idx == 1)
+            }
+            if (idx == 1) {
               Navigator.pushReplacement(
                   context, createFadeRoute(const InsightsScreen()));
-            if (idx == 2)
+            }
+            if (idx == 2) {
               Navigator.pushReplacement(
                   context, createFadeRoute(const HomeScreen()));
-            if (idx == 3)
+            }
+            if (idx == 3) {
               Navigator.pushReplacement(
                   context, createFadeRoute(const ActivitiesScreen()));
-            if (idx == 4)
+            }
+            if (idx == 4) {
               Navigator.pushReplacement(
                   context, createFadeRoute(const ProfileScreen()));
+            }
           },
           child: Container(
               width: 50,

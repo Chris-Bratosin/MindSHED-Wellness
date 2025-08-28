@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 class JournalScreen extends StatefulWidget {
-  const JournalScreen({Key? key}) : super(key: key);
+  const JournalScreen({super.key});
 
   @override
   State<JournalScreen> createState() => _JournalScreenState();

@@ -9,6 +9,7 @@ import 'package:mindshed_app/settings_screen.dart';
 import 'package:mindshed_app/activities_screen.dart';
 import 'package:mindshed_app/transition_helper.dart';
 import 'package:mindshed_app/edit_details_screen.dart';
+import 'pet_panel.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -115,9 +116,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final engine = InsightsEngine(metricsBox);
       final score = await engine.getPredictedScore(userId, DateRange.daily);
       String mood = 'Normal';
-      if (score >= 80)
+      if (score >= 80) {
         mood = 'Excited';
-      else if (score >= 60)
+      } else if (score >= 60)
         mood = 'Happy';
       else if (score >= 40)
         mood = 'Okay';
@@ -241,7 +242,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _buildLabelButton('$_username', fontSize: fontSize),
+                          _buildLabelButton(_username, fontSize: fontSize),
                           _buildLabelButton('Current Streak: $_streak',
                               fontSize: fontSize),
                           _buildLabelButton(
@@ -267,122 +268,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
 
-              Container(
-                margin: const EdgeInsets.all(12),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  border: Border.all(color: Colors.black, width: 2),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        // Pet Image/Icon (Left Side)
-                        Container(
-                          width: 100,
-                          height: 100,
-                          padding: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            border:
-                                Border.all(color: Colors.grey[400]!, width: 1),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(14),
-                            child: Image.asset('assets/images/pet.jpg',
-                                width: 96, height: 96, fit: BoxFit.cover),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-
-                        // Pet Details (Right Side)
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              // Pet Name field
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                      color: Colors.grey[300]!, width: 1),
-                                ),
-                                child: Text(
-                                  _petName == null || _petName!.isEmpty
-                                      ? 'Set your pet name'
-                                      : '$_petName',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontFamily: 'HappyMonkey',
-                                    fontSize: fontSize,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-
-                              // Current Mood field
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                      color: Colors.grey[300]!, width: 1),
-                                ),
-                                child: Text(
-                                  _petMood,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontFamily: 'HappyMonkey',
-                                    fontSize: fontSize,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Pet List Button (Bottom)
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color(0xFFB6FFB1), // Light green
-                          foregroundColor: Colors.black87,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            side: BorderSide(color: Colors.black, width: 1),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          elevation: 2,
-                        ),
-                        onPressed: () {}, // Removed _renamePet
-                        child: Text(
-                          'Pet List',
-                          style: TextStyle(
-                            fontSize: fontSize,
-                            fontFamily: 'HappyMonkey',
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              const PetPanel(),
 
               Container(
                 margin: const EdgeInsets.all(12),
@@ -493,21 +379,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
         customBorder: const CircleBorder(),
         onTap: () {
           setState(() => _selectedIndex = index);
-          if (index == 0)
+          if (index == 0) {
             Navigator.pushReplacement(
                 context, createFadeRoute(const SettingsScreen()));
-          if (index == 1)
+          }
+          if (index == 1) {
             Navigator.pushReplacement(
                 context, createFadeRoute(const InsightsScreen()));
-          if (index == 2)
+          }
+          if (index == 2) {
             Navigator.pushReplacement(
                 context, createFadeRoute(const HomeScreen()));
-          if (index == 3)
+          }
+          if (index == 3) {
             Navigator.pushReplacement(
                 context, createFadeRoute(const ActivitiesScreen()));
-          if (index == 4)
+          }
+          if (index == 4) {
             Navigator.pushReplacement(
                 context, createFadeRoute(const ProfileScreen()));
+          }
         },
         child: Container(
             width: 50,

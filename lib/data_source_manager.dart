@@ -177,8 +177,9 @@ class DataSourceManager {
   // Get data quality for current setup
   DataQuality getCurrentDataQuality() {
     if (isOuraRingConnected) return DataQuality.premium;
-    if (isAppleHealthConnected || isGoogleFitConnected)
+    if (isAppleHealthConnected || isGoogleFitConnected) {
       return DataQuality.comprehensive;
+    }
     if (isPhoneSensorsAvailable) return DataQuality.basic;
     return DataQuality.minimal;
   }

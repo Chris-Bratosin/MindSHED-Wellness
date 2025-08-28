@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\git\MindSHED-Wellness\build\windows\x64\CMakeFiles\604e50120aca43e5a59d26529f90767e\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{EF3BCCC6-AEE5-39CC-B46A-0C1F37A2D1AA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

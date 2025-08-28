@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\git\MindSHED-Wellness\build\windows\x64\_deps\nuget-subbuild\CMakeFiles\c9b45f6bd1eeab17d94a0ca016908947\nuget-populate-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\git\MindSHED-Wellness\build\windows\x64\_deps\nuget-subbuild\CMakeFiles\c9b45f6bd1eeab17d94a0ca016908947\nuget-populate-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\git\MindSHED-Wellness\build\windows\x64\_deps\nuget-subbuild\CMakeFiles\c9b45f6bd1eeab17d94a0ca016908947\nuget-populate-update.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\git\MindSHED-Wellness\build\windows\x64\_deps\nuget-subbuild\CMakeFiles\c9b45f6bd1eeab17d94a0ca016908947\nuget-populate-patch.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\git\MindSHED-Wellness\build\windows\x64\_deps\nuget-subbuild\CMakeFiles\c9b45f6bd1eeab17d94a0ca016908947\nuget-populate-copyfile.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\git\MindSHED-Wellness\build\windows\x64\_deps\nuget-subbuild\CMakeFiles\c9b45f6bd1eeab17d94a0ca016908947\nuget-populate-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\git\MindSHED-Wellness\build\windows\x64\_deps\nuget-subbuild\CMakeFiles\c9b45f6bd1eeab17d94a0ca016908947\nuget-populate-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\git\MindSHED-Wellness\build\windows\x64\_deps\nuget-subbuild\CMakeFiles\c9b45f6bd1eeab17d94a0ca016908947\nuget-populate-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\git\MindSHED-Wellness\build\windows\x64\_deps\nuget-subbuild\CMakeFiles\c9b45f6bd1eeab17d94a0ca016908947\nuget-populate-test.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\git\MindSHED-Wellness\build\windows\x64\_deps\nuget-subbuild\CMakeFiles\d4df6e0dd1d21411a8c30c3275a64d2f\nuget-populate-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\git\MindSHED-Wellness\build\windows\x64\_deps\nuget-subbuild\CMakeFiles\f0076dc811e6cee40f404f6a587e8897\nuget-populate.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\git\MindSHED-Wellness\build\windows\x64\_deps\nuget-subbuild\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="D:\git\MindSHED-Wellness\build\windows\x64\_deps\nuget-subbuild\CMakeFiles\nuget-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{8862D6C8-4155-3793-908E-8659B1EF8D3D}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

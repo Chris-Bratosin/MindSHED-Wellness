@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 
 class GuidedBreathingScreen extends StatefulWidget {
-  const GuidedBreathingScreen({Key? key}) : super(key: key);
+  const GuidedBreathingScreen({super.key});
 
   @override
   _GuidedBreathingScreenState createState() => _GuidedBreathingScreenState();
@@ -309,7 +309,7 @@ class _GuidedBreathingScreenState extends State<GuidedBreathingScreen> {
                           ),
                         ),
                       )
-                      .toList(),
+                      ,
                 ],
               ),
             ),

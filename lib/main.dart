@@ -10,6 +10,7 @@ import 'user.dart';
 import 'login_screen.dart';
 import 'home_screen.dart';
 import 'notification_service.dart';
+import 'pet_selection.dart';
 
 ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 ValueNotifier<String> fontSizeNotifier = ValueNotifier('normal');
@@ -24,6 +25,7 @@ Future<void> main() async {
   await Hive.openBox<User>('users');
   await Hive.openBox('session');
   await Hive.openBox('prefs');
+  await Hive.openBox('petNames');
 
   final encryptionKey = await _getEncryptionKey();
   await Hive.openBox(
@@ -36,6 +38,8 @@ Future<void> main() async {
 
   await NotificationService.init();
   await NotificationService.scheduleDailyReminder();
+
+  await PetSelection.instance.init();
 
   final sessionBox = Hive.box('session');
   final rememberedUser = sessionBox.get('loggedInUser');

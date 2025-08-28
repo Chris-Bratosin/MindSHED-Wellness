@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
-import 'settings_screen.dart';
-import 'transition_helper.dart';
 import 'main.dart'; // to access themeNotifier
 
 class PreferencesScreen extends StatefulWidget {
-  const PreferencesScreen({Key? key}) : super(key: key);
+  const PreferencesScreen({super.key});
 
   @override
   State<PreferencesScreen> createState() => _PreferencesScreenState();
