@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 import 'main.dart'; // to access themeNotifier
+import 'shared_ui_components.dart';
 
 const cream = Color(0xFFFFF9DA);
 
@@ -32,74 +33,69 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
 
     return Scaffold(
       backgroundColor: cream,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          'Preferences',
-          style: TextStyle(
-            fontFamily: 'HappyMonkey',
-            fontSize: currentFontSize + 6,
-            color: Theme.of(context).textTheme.bodyMedium?.color,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              SharedUIComponents.buildHeaderPill(
+                'Preferences',
+                fontSize: currentFontSize + 4,
+              ),
+              const SizedBox(height: 18),
+
+              // 1. Dark Theme Toggle
+              _buildSwitchTile(
+                title: 'Dark Theme',
+                value: isDarkTheme,
+                onChanged: (val) async {
+                  setState(() {
+                    isDarkTheme = val;
+                  });
+                  final prefs = Hive.box('prefs');
+                  await prefs.put('darkMode', val);
+                  themeNotifier.value = val ? ThemeMode.dark : ThemeMode.light;
+                },
+              ),
+
+              const SizedBox(height: 16),
+
+              // 2. Font Size Selection
+              _buildFontSizeSelector(currentFontSize),
+
+              const SizedBox(height: 16),
+
+              // 3. App Themes Selection (Locked)
+              _buildAppThemesSelector(currentFontSize),
+
+              const SizedBox(height: 16),
+
+              // 4. App Animations Toggle
+              _buildSwitchTile(
+                title: 'App Animations',
+                value: false, // Placeholder value
+                onChanged: (val) {
+                  // Placeholder logic
+                },
+              ),
+
+              const SizedBox(height: 16),
+
+              // 5. Face ID Access Toggle
+              _buildSwitchTile(
+                title: 'Face ID Access',
+                value: false, // Placeholder value
+                onChanged: (val) {
+                  // Placeholder logic
+                },
+              ),
+
+              const Spacer(),
+              const SizedBox(height: 20),
+              _backButton(),
+              const SizedBox(height: 20),
+            ],
           ),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-
-            // 1. Dark Theme Toggle
-            _buildSwitchTile(
-              title: 'Dark Theme',
-              value: isDarkTheme,
-              onChanged: (val) async {
-                setState(() {
-                  isDarkTheme = val;
-                });
-                final prefs = Hive.box('prefs');
-                await prefs.put('darkMode', val);
-                themeNotifier.value = val ? ThemeMode.dark : ThemeMode.light;
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            // 2. Font Size Selection
-            _buildFontSizeSelector(currentFontSize),
-
-            const SizedBox(height: 16),
-
-            // 3. App Themes Selection (Locked)
-            _buildAppThemesSelector(currentFontSize),
-
-            const SizedBox(height: 16),
-
-            // 4. App Animations Toggle
-            _buildSwitchTile(
-              title: 'App Animations',
-              value: false, // Placeholder value
-              onChanged: (val) {
-                // Placeholder logic
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            // 5. Face ID Access Toggle
-            _buildSwitchTile(
-              title: 'Face ID Access',
-              value: false, // Placeholder value
-              onChanged: (val) {
-                // Placeholder logic
-              },
-            ),
-
-            const Spacer(),
-            const SizedBox(height: 20),
-          ],
         ),
       ),
     );
@@ -144,6 +140,44 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     );
   }
 
+  Widget _backButton() => Center(
+    child: Material(
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(22),
+        side: const BorderSide(color: Colors.black, width: 2),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: () => Navigator.pop(context),
+        child: Container(
+          width: 120,
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFB6FFB1),
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: const Text(
+            'Back',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'HappyMonkey',
+              fontWeight: FontWeight.w700,
+              color: Colors.black,
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
   Widget _buildFontSizeSelector(double currentFontSize) {
     return Container(
       width: double.infinity,
@@ -168,7 +202,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: ['Small', 'Medium', 'Large'].map((size) {
-              bool isSelected = fontSize == size ||
+              bool isSelected =
+                  fontSize == size ||
                   (fontSize == 'Normal' && size == 'Medium');
               return InkWell(
                 onTap: () async {
@@ -180,8 +215,10 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                   fontSizeNotifier.value = size;
                 },
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 20,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? const Color(0xFFB6FFB1) // Light green for selected
@@ -231,8 +268,10 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: ['Spring', 'Summer', 'Winter'].map((theme) {
               return Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 20,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
@@ -251,9 +290,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                     ),
                     // Diagonal line crossing through the button to show it's locked
                     Positioned.fill(
-                      child: CustomPaint(
-                        painter: DiagonalLinePainter(),
-                      ),
+                      child: CustomPaint(painter: DiagonalLinePainter()),
                     ),
                   ],
                 ),
@@ -288,18 +325,10 @@ class DiagonalLinePainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     // Draw diagonal line from top-left to bottom-right
-    canvas.drawLine(
-      Offset(0, 0),
-      Offset(size.width, size.height),
-      linePaint,
-    );
+    canvas.drawLine(Offset(0, 0), Offset(size.width, size.height), linePaint);
 
     // Draw diagonal line from top-right to bottom-left
-    canvas.drawLine(
-      Offset(size.width, 0),
-      Offset(0, size.height),
-      linePaint,
-    );
+    canvas.drawLine(Offset(size.width, 0), Offset(0, size.height), linePaint);
   }
 
   @override

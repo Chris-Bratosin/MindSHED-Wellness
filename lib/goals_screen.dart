@@ -12,9 +12,9 @@ class GoalsScreen extends StatefulWidget {
 class _GoalsScreenState extends State<GoalsScreen> {
   // ----- palette -----
   static const cream = Color(0xFFFFF9DA);
-  static const sage  = Color(0xFFD4E7C5);
+  static const sage = Color(0xFFD4E7C5);
   static const sageDark = Color(0xFFBFD5AA);
-  static const mint  = Color(0xFFB6FFB1);
+  static const mint = Color(0xFFB6FFB1);
 
   // form
   final TextEditingController _goalName = TextEditingController();
@@ -65,7 +65,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
   void _addGoal() async {
     final title = _goalName.text.trim();
-    final desc  = _goalDesc.text.trim();
+    final desc = _goalDesc.text.trim();
 
     if (title.isEmpty || desc.isEmpty) {
       _toast('Please enter a goal name and description.');
@@ -93,7 +93,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
   // ---------- helpers ----------
   void _toast(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg, style: const TextStyle(fontFamily: 'HappyMonkey')))
+      SnackBar(
+        content: Text(msg, style: const TextStyle(fontFamily: 'HappyMonkey')),
+      ),
     );
   }
 
@@ -134,21 +136,29 @@ class _GoalsScreenState extends State<GoalsScreen> {
         border: Border.all(color: Colors.black, width: 2.5),
         boxShadow: [
           BoxShadow(
-              color: Colors.black12,
-              blurRadius: 6,
-              offset: const Offset(0, 3))
+            color: Colors.black12,
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
         ],
       ),
-      child: Text(text,
-          style: const TextStyle(
-              fontFamily: 'HappyMonkey',
-              fontSize: 22,
-              color: Colors.black)),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontFamily: 'HappyMonkey',
+          fontSize: 22,
+          color: Colors.black,
+        ),
+      ),
     ),
   );
 
-  Widget _mintBtn(String label, VoidCallback onTap,
-      {IconData? icon, EdgeInsetsGeometry? pad}) {
+  Widget _mintBtn(
+    String label,
+    VoidCallback onTap, {
+    IconData? icon,
+    EdgeInsetsGeometry? pad,
+  }) {
     return Material(
       color: Colors.transparent,
       shape: RoundedRectangleBorder(
@@ -159,15 +169,17 @@ class _GoalsScreenState extends State<GoalsScreen> {
         borderRadius: BorderRadius.circular(22),
         onTap: onTap,
         child: Container(
-          padding: pad ?? const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+          padding:
+              pad ?? const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
           decoration: BoxDecoration(
             color: mint,
             borderRadius: BorderRadius.circular(22),
             boxShadow: [
               BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 4,
-                  offset: const Offset(0, 2))
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
             ],
           ),
           child: Row(
@@ -177,11 +189,14 @@ class _GoalsScreenState extends State<GoalsScreen> {
                 Icon(icon, color: Colors.black),
                 const SizedBox(width: 8),
               ],
-              Text(label,
-                  style: const TextStyle(
-                      fontFamily: 'HappyMonkey',
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontFamily: 'HappyMonkey',
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black,
+                ),
+              ),
             ],
           ),
         ),
@@ -189,33 +204,71 @@ class _GoalsScreenState extends State<GoalsScreen> {
     );
   }
 
+  Widget _backButton() => Center(
+    child: Material(
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(22),
+        side: const BorderSide(color: Colors.black, width: 2),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: () => Navigator.maybePop(context),
+        child: Container(
+          width: 120,
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFB6FFB1),
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: const Text(
+            'Back',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'HappyMonkey',
+              fontWeight: FontWeight.w700,
+              color: Colors.black,
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
   // -------- Random goal generator --------
   void _generateGoal() {
     const templates = [
       {
         'title': 'Stay consistent in the gym for 1 month',
         'desc':
-        'Go to the gym at least 3x per week for a month. Track workouts and set reminders.'
+            'Go to the gym at least 3x per week for a month. Track workouts and set reminders.',
       },
       {
         'title': 'Read 2 books this month',
         'desc':
-        'Finish two books by reading 20–30 minutes daily. Log progress each night.'
+            'Finish two books by reading 20–30 minutes daily. Log progress each night.',
       },
       {
         'title': 'Improve sleep routine',
         'desc':
-        'Aim for 7–8 hours nightly. No screens 30 minutes before bed; lights out by 11pm.'
+            'Aim for 7–8 hours nightly. No screens 30 minutes before bed; lights out by 11pm.',
       },
       {
         'title': 'Daily hydration habit',
         'desc':
-        'Drink 2L water daily. Keep a bottle nearby and tick off four 500ml fills.'
+            'Drink 2L water daily. Keep a bottle nearby and tick off four 500ml fills.',
       },
       {
         'title': 'Mindfulness streak: 10 minutes/day',
         'desc':
-        'Meditate 10 minutes each day for two weeks. Use a timer and note how you feel.'
+            'Meditate 10 minutes each day for two weeks. Use a timer and note how you feel.',
       },
     ];
     final pick = templates[Random().nextInt(templates.length)];
@@ -248,7 +301,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                 color: Colors.black26,
                 blurRadius: 12,
                 offset: const Offset(0, 6),
-              )
+              ),
             ],
           ),
           child: Column(
@@ -256,7 +309,10 @@ class _GoalsScreenState extends State<GoalsScreen> {
             children: [
               // title pill
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
@@ -266,8 +322,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
                   goal['title'] ?? '',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                      fontFamily: 'HappyMonkey',
-                      fontWeight: FontWeight.w700),
+                    fontFamily: 'HappyMonkey',
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
@@ -290,12 +347,15 @@ class _GoalsScreenState extends State<GoalsScreen> {
               if (due != null)
                 _mintBtn(
                   'Due ${_fmtDate(due)}',
-                      () {},
+                  () {},
                   pad: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 )
               else
-                _mintBtn('No due date', () {},
-                    pad: const EdgeInsets.symmetric(horizontal: 16, vertical: 10)),
+                _mintBtn(
+                  'No due date',
+                  () {},
+                  pad: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                ),
               const SizedBox(height: 10),
               Row(
                 children: [
@@ -325,18 +385,6 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
     return Scaffold(
       backgroundColor: cream,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: cream,
-        centerTitle: true,
-        leading: BackButton(color: Colors.black),
-        title: Text('Goals',
-            style: TextStyle(
-              fontFamily: 'HappyMonkey',
-              fontSize: fs,
-              color: Colors.black,
-            )),
-      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
@@ -350,11 +398,11 @@ class _GoalsScreenState extends State<GoalsScreen> {
               const SizedBox(height: 10),
               _mintBtn('View Goals', () => setState(() => _viewMode = true)),
               const SizedBox(height: 8),
-              _mintBtn('Back', () => Navigator.maybePop(context)),
+              _backButton(),
             ] else ...[
               _buildViewGoals(fs),
               const SizedBox(height: 10),
-              _mintBtn('Back', () => setState(() => _viewMode = false)),
+              _backButton(),
             ],
           ],
         ),
@@ -370,17 +418,17 @@ class _GoalsScreenState extends State<GoalsScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Center(
-            child: Text('Make a personal goal',
-                style: TextStyle(
-                    fontFamily: 'HappyMonkey',
-                    fontSize: fs,
-                    fontWeight: FontWeight.bold)),
+            child: Text(
+              'Make a personal goal',
+              style: TextStyle(
+                fontFamily: 'HappyMonkey',
+                fontSize: fs,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           const SizedBox(height: 12),
-          TextField(
-            controller: _goalName,
-            decoration: _pillInput('Goal Name'),
-          ),
+          TextField(controller: _goalName, decoration: _pillInput('Goal Name')),
           const SizedBox(height: 10),
           TextField(
             controller: _goalDesc,
@@ -398,17 +446,25 @@ class _GoalsScreenState extends State<GoalsScreen> {
             ),
             child: Column(
               children: [
-                Text('When would you like to complete this by?',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontFamily: 'HappyMonkey')),
+                Text(
+                  'When would you like to complete this by?',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontFamily: 'HappyMonkey'),
+                ),
                 const SizedBox(height: 8),
                 IconButton(
                   onPressed: _pickDate,
-                  icon: const Icon(Icons.calendar_month, size: 48, color: Colors.black),
+                  icon: const Icon(
+                    Icons.calendar_month,
+                    size: 48,
+                    color: Colors.black,
+                  ),
                 ),
                 if (_dueDate != null)
-                  Text('Selected: ${_fmtDate(_dueDate!)}',
-                      style: const TextStyle(fontFamily: 'HappyMonkey')),
+                  Text(
+                    'Selected: ${_fmtDate(_dueDate!)}',
+                    style: const TextStyle(fontFamily: 'HappyMonkey'),
+                  ),
               ],
             ),
           ),
@@ -444,11 +500,14 @@ class _GoalsScreenState extends State<GoalsScreen> {
       child: Column(
         children: [
           Center(
-            child: Text('View Goals',
-                style: TextStyle(
-                    fontFamily: 'HappyMonkey',
-                    fontSize: fs,
-                    fontWeight: FontWeight.bold)),
+            child: Text(
+              'View Goals',
+              style: TextStyle(
+                fontFamily: 'HappyMonkey',
+                fontSize: fs,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           const SizedBox(height: 10),
           if (_goals.isEmpty)
@@ -475,13 +534,17 @@ class _GoalsScreenState extends State<GoalsScreen> {
                   borderRadius: BorderRadius.circular(16),
                   onTap: () => _showGoalDialog(g, i),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 14,
+                    ),
                     child: Text(
                       g['title'] ?? '',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                          fontFamily: 'HappyMonkey',
-                          fontWeight: FontWeight.w700),
+                        fontFamily: 'HappyMonkey',
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),

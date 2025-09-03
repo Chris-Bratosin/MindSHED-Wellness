@@ -7,7 +7,8 @@ class BadgesScreen extends StatefulWidget {
   _BadgesScreenState createState() => _BadgesScreenState();
 }
 
-class _BadgesScreenState extends State<BadgesScreen> with WidgetsBindingObserver {
+class _BadgesScreenState extends State<BadgesScreen>
+    with WidgetsBindingObserver {
   // ---- palette (mockup) ----
   static const cream = Color(0xFFFFF9DA);
   static const mintCard = Color(0xFFD6F5D6);
@@ -16,7 +17,7 @@ class _BadgesScreenState extends State<BadgesScreen> with WidgetsBindingObserver
   static const blueBar = Color(0xFF78AEEA);
 
   String? _petName;
-  int _streak  = 0;
+  int _streak = 0;
   int _totalXp = 0;
 
   @override
@@ -40,13 +41,13 @@ class _BadgesScreenState extends State<BadgesScreen> with WidgetsBindingObserver
   // --------- SAME LOGIC AS BEFORE ---------
   Future<void> _loadData() async {
     final session = await Hive.openBox('session');
-    final pets    = await Hive.openBox('petNames');
-    final userId  = session.get('loggedInUser') as String?;
+    final pets = await Hive.openBox('petNames');
+    final userId = session.get('loggedInUser') as String?;
     if (userId == null) return;
 
     setState(() {
       _petName = pets.get(userId) as String?;
-      _streak  = session.get('${userId}_currentStreak') as int? ?? 0;
+      _streak = session.get('${userId}_currentStreak') as int? ?? 0;
       _totalXp = session.get('${userId}_totalXp') as int? ?? 0;
     });
   }
@@ -61,10 +62,21 @@ class _BadgesScreenState extends State<BadgesScreen> with WidgetsBindingObserver
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: Colors.black, width: 2.5),
         boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 6, offset: const Offset(0, 3)),
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
         ],
       ),
-      child: Text(text, style: const TextStyle(fontFamily: 'HappyMonkey', fontSize: 24, color: Colors.black)),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontFamily: 'HappyMonkey',
+          fontSize: 24,
+          color: Colors.black,
+        ),
+      ),
     ),
   );
 
@@ -81,9 +93,14 @@ class _BadgesScreenState extends State<BadgesScreen> with WidgetsBindingObserver
       borderRadius: BorderRadius.circular(16),
       border: Border.all(color: Colors.black, width: 2),
     ),
-    child: Text(text,
+    child: Text(
+      text,
       textAlign: TextAlign.center,
-      style: const TextStyle(fontFamily: 'HappyMonkey', fontWeight: FontWeight.w600, color: Colors.black),
+      style: const TextStyle(
+        fontFamily: 'HappyMonkey',
+        fontWeight: FontWeight.w600,
+        color: Colors.black,
+      ),
     ),
   );
 
@@ -98,13 +115,28 @@ class _BadgesScreenState extends State<BadgesScreen> with WidgetsBindingObserver
         borderRadius: BorderRadius.circular(22),
         onTap: () => Navigator.maybePop(context),
         child: Container(
+          width: 120,
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
           decoration: BoxDecoration(
             color: const Color(0xFFB6FFB1),
             borderRadius: BorderRadius.circular(22),
-            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: const Offset(0, 2))],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          child: const Text('Back', style: TextStyle(fontFamily: 'HappyMonkey', fontWeight: FontWeight.w700, color: Colors.black)),
+          child: const Text(
+            'Back',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'HappyMonkey',
+              fontWeight: FontWeight.w700,
+              color: Colors.black,
+            ),
+          ),
         ),
       ),
     ),
@@ -112,31 +144,31 @@ class _BadgesScreenState extends State<BadgesScreen> with WidgetsBindingObserver
 
   @override
   Widget build(BuildContext ctx) {
-    final size  = Theme.of(ctx).textTheme.bodyMedium?.fontSize ?? 14.0;
+    final size = Theme.of(ctx).textTheme.bodyMedium?.fontSize ?? 14.0;
 
     const xpForLevel = 100;
-    final level    = _totalXp ~/ xpForLevel + 1;
-    final within   = (_totalXp % xpForLevel); // xp within current level
+    final level = _totalXp ~/ xpForLevel + 1;
+    final within = (_totalXp % xpForLevel); // xp within current level
     final progress = within / xpForLevel;
 
     // SAME ACHIEVEMENT LOGIC, just styled differently
     final achievements = [
       {
         'title': 'Finally named my pet!',
-        'desc':  'You gave your pet a name.',
-        'xp':    10,
+        'desc': 'You gave your pet a name.',
+        'xp': 10,
         'unlocked': (_petName ?? '').isNotEmpty,
       },
       {
         'title': '3-Day Streak',
-        'desc':  'Logged in 3 days straight.',
-        'xp':    5,
+        'desc': 'Logged in 3 days straight.',
+        'xp': 5,
         'unlocked': _streak >= 3,
       },
       {
         'title': '7-Day Streak',
-        'desc':  'Logged in 7 days straight.',
-        'xp':    10,
+        'desc': 'Logged in 7 days straight.',
+        'xp': 10,
         'unlocked': _streak >= 7,
       },
     ];
@@ -144,13 +176,6 @@ class _BadgesScreenState extends State<BadgesScreen> with WidgetsBindingObserver
 
     return Scaffold(
       backgroundColor: cream,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: cream,
-        centerTitle: true,
-        leading: const BackButton(color: Colors.black),
-        title: Text('View Badges', style: TextStyle(fontFamily: 'HappyMonkey', fontSize: size, color: Colors.black)),
-      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
@@ -174,7 +199,11 @@ class _BadgesScreenState extends State<BadgesScreen> with WidgetsBindingObserver
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: Colors.black, width: 2),
                         ),
-                        child: const Icon(Icons.person, size: 48, color: Colors.black),
+                        child: const Icon(
+                          Icons.person,
+                          size: 48,
+                          color: Colors.black,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -194,7 +223,10 @@ class _BadgesScreenState extends State<BadgesScreen> with WidgetsBindingObserver
                     alignment: Alignment.centerLeft,
                     child: Text(
                       '$within/$xpForLevel',
-                      style: const TextStyle(fontFamily: 'HappyMonkey', color: Colors.black),
+                      style: const TextStyle(
+                        fontFamily: 'HappyMonkey',
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -229,8 +261,15 @@ class _BadgesScreenState extends State<BadgesScreen> with WidgetsBindingObserver
                 border: Border.all(color: Colors.black, width: 2),
               ),
               child: Center(
-                child: Text('Your Achievements',
-                    style: TextStyle(fontFamily: 'HappyMonkey', fontSize: size + 2, fontWeight: FontWeight.bold, color: Colors.black)),
+                child: Text(
+                  'Your Achievements',
+                  style: TextStyle(
+                    fontFamily: 'HappyMonkey',
+                    fontSize: size + 2,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
               ),
             ),
 
@@ -260,7 +299,11 @@ class _BadgesScreenState extends State<BadgesScreen> with WidgetsBindingObserver
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: Colors.black, width: 2),
                         ),
-                        child: const Icon(Icons.military_tech_outlined, size: 24, color: Colors.black),
+                        child: const Icon(
+                          Icons.military_tech_outlined,
+                          size: 24,
+                          color: Colors.black,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       // text column
@@ -268,32 +311,42 @@ class _BadgesScreenState extends State<BadgesScreen> with WidgetsBindingObserver
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(b['title'] as String,
-                                style: TextStyle(
-                                  fontFamily: 'HappyMonkey',
-                                  fontSize: size + 2,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.black,
-                                )),
+                            Text(
+                              b['title'] as String,
+                              style: TextStyle(
+                                fontFamily: 'HappyMonkey',
+                                fontSize: size + 2,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black,
+                              ),
+                            ),
                             const SizedBox(height: 2),
-                            Text(b['desc'] as String,
-                                style: TextStyle(
-                                  fontFamily: 'HappyMonkey',
-                                  fontSize: size,
-                                  color: Colors.black,
-                                )),
+                            Text(
+                              b['desc'] as String,
+                              style: TextStyle(
+                                fontFamily: 'HappyMonkey',
+                                fontSize: size,
+                                color: Colors.black,
+                              ),
+                            ),
                             const SizedBox(height: 2),
-                            Text('+${b['xp']}xp',
-                                style: TextStyle(
-                                  fontFamily: 'HappyMonkey',
-                                  fontSize: size - 2,
-                                  color: Colors.black,
-                                )),
+                            Text(
+                              '+${b['xp']}xp',
+                              style: TextStyle(
+                                fontFamily: 'HappyMonkey',
+                                fontSize: size - 2,
+                                color: Colors.black,
+                              ),
+                            ),
                           ],
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Icon(ok ? Icons.emoji_events_outlined : Icons.lock_outline, size: 26, color: Colors.black),
+                      Icon(
+                        ok ? Icons.emoji_events_outlined : Icons.lock_outline,
+                        size: 26,
+                        color: Colors.black,
+                      ),
                     ],
                   ),
                 ),

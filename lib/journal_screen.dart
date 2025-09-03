@@ -22,8 +22,8 @@ class _JournalScreenState extends State<JournalScreen> {
 
   // palette
   static const cream = Color(0xFFFFF9DA);
-  static const mint  = Color(0xFFB6FFB1);
-  static const sage  = Color(0xFFD9E3C4);
+  static const mint = Color(0xFFB6FFB1);
+  static const sage = Color(0xFFD9E3C4);
   //static const rose  = Color(0xFFFF8A7D);
 
   @override
@@ -53,7 +53,8 @@ class _JournalScreenState extends State<JournalScreen> {
       _entries = saved == null
           ? []
           : List<Map<String, String>>.from(
-          (saved as List).map((e) => Map<String, String>.from(e as Map)));
+              (saved as List).map((e) => Map<String, String>.from(e as Map)),
+            );
     });
   }
 
@@ -81,9 +82,9 @@ class _JournalScreenState extends State<JournalScreen> {
       _mood = 0;
     });
     await _saveToHive();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Entry saved')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Entry saved')));
   }
 
   void _goBackToActivities() {
@@ -101,9 +102,7 @@ class _JournalScreenState extends State<JournalScreen> {
   Future<void> _openEntriesScreen() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => JournalEntriesScreen(userId: _userId),
-      ),
+      MaterialPageRoute(builder: (_) => JournalEntriesScreen(userId: _userId)),
     );
     // refresh after returning
     if (_userId != null) await _loadFromHive(_userId!);
@@ -137,9 +136,22 @@ class _JournalScreenState extends State<JournalScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.black, width: 2),
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6, offset: const Offset(0, 3))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
-        child: Text(title, style: const TextStyle(fontFamily: 'HappyMonkey', fontSize: 22, color: Colors.black)),
+        child: Text(
+          title,
+          style: const TextStyle(
+            fontFamily: 'HappyMonkey',
+            fontSize: 22,
+            color: Colors.black,
+          ),
+        ),
       ),
     );
   }
@@ -150,7 +162,13 @@ class _JournalScreenState extends State<JournalScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.black, width: 2),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6, offset: const Offset(0, 3))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -159,11 +177,21 @@ class _JournalScreenState extends State<JournalScreen> {
             padding: const EdgeInsets.symmetric(vertical: 10),
             decoration: const BoxDecoration(
               color: sage,
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
               border: Border(bottom: BorderSide(color: Colors.black, width: 2)),
             ),
             child: Center(
-              child: Text(title, style: const TextStyle(fontFamily: 'HappyMonkey', fontSize: 18, color: Colors.black)),
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontFamily: 'HappyMonkey',
+                  fontSize: 18,
+                  color: Colors.black,
+                ),
+              ),
             ),
           ),
           Padding(padding: const EdgeInsets.all(14), child: child),
@@ -193,8 +221,14 @@ class _JournalScreenState extends State<JournalScreen> {
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
             child: Column(
               children: [
-                const Text('Rate current mood:',
-                    style: TextStyle(fontFamily: 'HappyMonkey', fontSize: 16, color: Colors.black)),
+                const Text(
+                  'Rate current mood:',
+                  style: TextStyle(
+                    fontFamily: 'HappyMonkey',
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                ),
                 const SizedBox(height: 6),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -256,19 +290,23 @@ class _JournalScreenState extends State<JournalScreen> {
         maxLines: maxLines,
         style: const TextStyle(
           fontSize: 16,
-          color: Colors.black,            // <-- typed text is black
+          color: Colors.black, // <-- typed text is black
           fontFamily: 'HappyMonkey',
         ),
         cursorColor: Colors.black,
-        textAlignVertical:
-        multiline ? TextAlignVertical.top : TextAlignVertical.center, // <- hint aligns like text
+        textAlignVertical: multiline
+            ? TextAlignVertical.top
+            : TextAlignVertical.center, // <- hint aligns like text
         decoration: InputDecoration(
           border: InputBorder.none,
           isDense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 12,
+          ),
           hintText: hint,
           hintStyle: TextStyle(
-            color: Colors.black54,     // <- dimmed hint
+            color: Colors.black54, // <- dimmed hint
             fontSize: 16,
             fontFamily: 'HappyMonkey',
           ),
@@ -281,7 +319,13 @@ class _JournalScreenState extends State<JournalScreen> {
     color: Colors.white,
     borderRadius: BorderRadius.circular(12),
     border: Border.all(color: Colors.black, width: 2),
-    boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: const Offset(0, 2))],
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black12,
+        blurRadius: 4,
+        offset: const Offset(0, 2),
+      ),
+    ],
   );
 
   Widget _mintButton(String label, VoidCallback onTap) {
@@ -300,9 +344,21 @@ class _JournalScreenState extends State<JournalScreen> {
             decoration: BoxDecoration(
               color: mint,
               borderRadius: BorderRadius.circular(18),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: const Offset(0, 2))],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            child: Text(label, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w600)),
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ),
       ),
@@ -314,20 +370,35 @@ class _JournalScreenState extends State<JournalScreen> {
       child: Material(
         color: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(22),
           side: const BorderSide(color: Colors.black, width: 2),
         ),
         child: InkWell(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(22),
           onTap: _goBackToActivities,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+            width: 120,
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
             decoration: BoxDecoration(
               color: mint,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: const Offset(0, 2))],
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            child: const Text('Back', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600)),
+            child: const Text(
+              'Back',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w700,
+                fontFamily: 'HappyMonkey',
+              ),
+            ),
           ),
         ),
       ),
@@ -355,9 +426,9 @@ class JournalEntriesScreen extends StatefulWidget {
 
 class _JournalEntriesScreenState extends State<JournalEntriesScreen> {
   static const cream = Color(0xFFFFF9DA);
-  static const mint  = Color(0xFFB6FFB1);
-  static const sage  = Color(0xFFD9E3C4);
-  static const rose  = Color(0xFFFF8A7D);
+  static const mint = Color(0xFFB6FFB1);
+  static const sage = Color(0xFFD9E3C4);
+  static const rose = Color(0xFFFF8A7D);
 
   List<Map<String, String>> _entries = [];
   int? _selectedIndex;
@@ -376,7 +447,8 @@ class _JournalEntriesScreenState extends State<JournalEntriesScreen> {
       _entries = saved == null
           ? []
           : List<Map<String, String>>.from(
-          (saved as List).map((e) => Map<String, String>.from(e as Map)));
+              (saved as List).map((e) => Map<String, String>.from(e as Map)),
+            );
     });
   }
 
@@ -387,24 +459,34 @@ class _JournalEntriesScreenState extends State<JournalEntriesScreen> {
   }
 
   Future<void> _delete(int index) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Confirm Deletion'),
-        content: const Text('Delete this journal entry?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(context, true),
-              child: const Text('Delete', style: TextStyle(color: Colors.red))),
-        ],
-      ),
-    ) ??
+    final ok =
+        await showDialog<bool>(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Confirm Deletion'),
+            content: const Text('Delete this journal entry?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+        ) ??
         false;
     if (!ok) return;
     setState(() {
       _entries.removeAt(index);
       if (_selectedIndex == index) _selectedIndex = null;
-      if (_selectedIndex != null && _selectedIndex! > index) _selectedIndex = _selectedIndex! - 1;
+      if (_selectedIndex != null && _selectedIndex! > index)
+        _selectedIndex = _selectedIndex! - 1;
     });
     await _save();
   }
@@ -438,9 +520,22 @@ class _JournalEntriesScreenState extends State<JournalEntriesScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.black, width: 2),
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6, offset: const Offset(0, 3))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
-        child: Text(title, style: const TextStyle(fontFamily: 'HappyMonkey', fontSize: 22, color: Colors.black)),
+        child: Text(
+          title,
+          style: const TextStyle(
+            fontFamily: 'HappyMonkey',
+            fontSize: 22,
+            color: Colors.black,
+          ),
+        ),
       ),
     );
   }
@@ -451,7 +546,13 @@ class _JournalEntriesScreenState extends State<JournalEntriesScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.black, width: 2),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6, offset: const Offset(0, 3))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -460,12 +561,21 @@ class _JournalEntriesScreenState extends State<JournalEntriesScreen> {
             padding: const EdgeInsets.symmetric(vertical: 10),
             decoration: const BoxDecoration(
               color: sage,
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
               border: Border(bottom: BorderSide(color: Colors.black, width: 2)),
             ),
             child: const Center(
-              child: Text('View Journal Notes',
-                  style: TextStyle(fontFamily: 'HappyMonkey', fontSize: 18, color: Colors.black)),
+              child: Text(
+                'View Journal Notes',
+                style: TextStyle(
+                  fontFamily: 'HappyMonkey',
+                  fontSize: 18,
+                  color: Colors.black,
+                ),
+              ),
             ),
           ),
           Padding(
@@ -475,8 +585,10 @@ class _JournalEntriesScreenState extends State<JournalEntriesScreen> {
                 if (_entries.isEmpty)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text('No entries yet.',
-                        style: TextStyle(fontFamily: 'HappyMonkey', fontSize: 16)),
+                    child: Text(
+                      'No entries yet.',
+                      style: TextStyle(fontFamily: 'HappyMonkey', fontSize: 16),
+                    ),
                   )
                 else
                   ListView.separated(
@@ -487,7 +599,10 @@ class _JournalEntriesScreenState extends State<JournalEntriesScreen> {
                     itemBuilder: (context, i) {
                       final e = _entries[i];
                       return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFE7F1D8),
                           borderRadius: BorderRadius.circular(10),
@@ -498,10 +613,17 @@ class _JournalEntriesScreenState extends State<JournalEntriesScreen> {
                             Expanded(
                               child: Text(
                                 '${e['name'] ?? 'Entry'} - ${e['date'] ?? ''}',
-                                style: const TextStyle(fontSize: 16, color: Colors.black),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.black,
+                                ),
                               ),
                             ),
-                            _chip('View', mint, onTap: () => setState(() => _selectedIndex = i)),
+                            _chip(
+                              'View',
+                              mint,
+                              onTap: () => setState(() => _selectedIndex = i),
+                            ),
                             const SizedBox(width: 8),
                             _chip('Delete', rose, onTap: () => _delete(i)),
                           ],
@@ -524,7 +646,10 @@ class _JournalEntriesScreenState extends State<JournalEntriesScreen> {
                     child: Center(
                       child: Text(
                         "${_entries[_selectedIndex!]['name']} - ${_entries[_selectedIndex!]['date']}",
-                        style: const TextStyle(fontSize: 16, color: Colors.black),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.black,
+                        ),
                       ),
                     ),
                   ),
@@ -536,11 +661,22 @@ class _JournalEntriesScreenState extends State<JournalEntriesScreen> {
                       color: const Color(0xFFF4F4F4),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.black, width: 2),
-                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: const Offset(0, 2))],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     padding: const EdgeInsets.all(12),
-                    child: Text(_entries[_selectedIndex!]['text'] ?? '',
-                        style: const TextStyle(fontSize: 16, color: Colors.black87)),
+                    child: Text(
+                      _entries[_selectedIndex!]['text'] ?? '',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.black87,
+                      ),
+                    ),
                   ),
                 ],
               ],
@@ -566,9 +702,21 @@ class _JournalEntriesScreenState extends State<JournalEntriesScreen> {
           decoration: BoxDecoration(
             color: fill,
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: const Offset(0, 2))],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          child: Text(label, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w600)),
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
       ),
     );
@@ -579,20 +727,35 @@ class _JournalEntriesScreenState extends State<JournalEntriesScreen> {
       child: Material(
         color: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(22),
           side: const BorderSide(color: Colors.black, width: 2),
         ),
         child: InkWell(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(22),
           onTap: _goBack,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+            width: 120,
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
             decoration: BoxDecoration(
               color: mint,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: const Offset(0, 2))],
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            child: const Text('Back', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600)),
+            child: const Text(
+              'Back',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w700,
+                fontFamily: 'HappyMonkey',
+              ),
+            ),
           ),
         ),
       ),

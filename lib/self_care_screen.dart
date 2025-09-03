@@ -85,7 +85,9 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
         for (final type in _completed.keys) {
           final m = raw[type];
           if (m is Map) {
-            _completed[type]!.addAll(m.map((k, v) => MapEntry(k.toString(), v == true)));
+            _completed[type]!.addAll(
+              m.map((k, v) => MapEntry(k.toString(), v == true)),
+            );
           }
         }
       }
@@ -251,7 +253,11 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
                         border: Border.all(color: Colors.black, width: 2),
                       ),
                       child: checked
-                          ? const Icon(Icons.check, size: 16, color: Colors.white)
+                          ? const Icon(
+                              Icons.check,
+                              size: 16,
+                              color: Colors.white,
+                            )
                           : null,
                     ),
                   ),
@@ -285,8 +291,10 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
                 borderRadius: BorderRadius.circular(18),
                 onTap: () {},
                 child: Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: mint,
                     borderRadius: BorderRadius.circular(18),
@@ -295,7 +303,7 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
                         color: Colors.black12,
                         blurRadius: 4,
                         offset: const Offset(0, 2),
-                      )
+                      ),
                     ],
                   ),
                   child: const Text(
@@ -314,6 +322,44 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
       ),
     );
   }
+
+  Widget _backButton() => Center(
+    child: Material(
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(22),
+        side: const BorderSide(color: Colors.black, width: 2),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: _goBack,
+        child: Container(
+          width: 120,
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFB6FFB1),
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: const Text(
+            'Back',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'HappyMonkey',
+              fontWeight: FontWeight.w700,
+              color: Colors.black,
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 
   void _goBack() {
     if (Navigator.canPop(context)) {
@@ -341,43 +387,7 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
             _tasksPanel(),
             const SizedBox(height: 18),
 
-            // Back button
-            Center(
-              child: Material(
-                color: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                  side: const BorderSide(color: Colors.black, width: 2),
-                ),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(18),
-                  onTap: _goBack,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: mint,
-                      borderRadius: BorderRadius.circular(18),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.12),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        )
-                      ],
-                    ),
-                    child: const Text(
-                      'Back',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'HappyMonkey',
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            _backButton(),
           ],
         ),
       ),

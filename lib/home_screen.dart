@@ -9,6 +9,8 @@ import 'profile_screen.dart';
 import 'insights_screen.dart';
 import 'settings_screen.dart';
 import 'transition_helper.dart';
+import 'shared_navigation.dart';
+import 'shared_ui_components.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -60,13 +62,18 @@ class _HomeScreenState extends State<HomeScreen> {
       final random = Random();
       final shuffled = List<Map<String, dynamic>>.from(dailyQuestPool);
       shuffled.shuffle(random);
-      final todayQuests = shuffled.take(4).map((q) => {
-        'title': q['title'],
-        'xp': q['xp'],
-        'color': _getColorFromXP(q['xp']).r,
-        'isQuest': true,
-        'checked': false,
-      }).toList();
+      final todayQuests = shuffled
+          .take(4)
+          .map(
+            (q) => {
+              'title': q['title'],
+              'xp': q['xp'],
+              'color': _getColorFromXP(q['xp']).value,
+              'isQuest': true,
+              'checked': false,
+            },
+          )
+          .toList();
       await questBox.put(userId, jsonEncode(todayQuests));
       await questBox.put('lastUpdatedFor_$userId', today);
     }
@@ -76,18 +83,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final loadedQuests = questData != null
         ? List<Map<String, dynamic>>.from(
-        (jsonDecode(questData) as List).map((e) => Map<String, dynamic>.from(e)))
+            (jsonDecode(questData) as List).map(
+              (e) => _migrateTaskData(Map<String, dynamic>.from(e)),
+            ),
+          )
         : <Map<String, dynamic>>[];
 
-    final filtered = loadedQuests.where((q) => !completed.contains(q['title'])).toList();
+    final filtered = loadedQuests
+        .where((q) => !completed.contains(q['title']))
+        .toList();
 
     final loadedManual = manualData != null
         ? List<Map<String, dynamic>>.from(
-        (jsonDecode(manualData) as List).map((e) => Map<String, dynamic>.from(e)))
+            (jsonDecode(manualData) as List).map(
+              (e) => _migrateTaskData(Map<String, dynamic>.from(e)),
+            ),
+          )
         : <Map<String, dynamic>>[];
 
     setState(() {
-      tasks = [...filtered, ...loadedManual].map((t) => {...t, 'checked': false}).toList();
+      tasks = [
+        ...filtered,
+        ...loadedManual,
+      ].map((t) => {...t, 'checked': false}).toList();
     });
   }
 
@@ -96,6 +114,29 @@ class _HomeScreenState extends State<HomeScreen> {
     if (xp <= 15) return taskColors[1];
     if (xp <= 25) return taskColors[2];
     return taskColors[3];
+  }
+
+  Map<String, dynamic> _migrateTaskData(Map<String, dynamic> task) {
+    // Check if color is stored as a double (old format) and convert to int
+    if (task.containsKey('color') && task['color'] is double) {
+      // If it's a double, it's likely the red component from the old format
+      // We need to reconstruct the full color value
+      double redComponent = task['color'] as double;
+
+      // Find the matching color from taskColors based on the red component
+      Color? matchingColor;
+      for (Color color in taskColors) {
+        if ((color.red / 255.0 - redComponent).abs() < 0.01) {
+          matchingColor = color;
+          break;
+        }
+      }
+
+      // If we found a match, use its full value, otherwise use a default
+      task['color'] = matchingColor?.value ?? taskColors[0].value;
+    }
+
+    return task;
   }
 
   Future<void> _saveManualTasks() async {
@@ -158,7 +199,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   TextField(
                     autofocus: true,
-                    decoration: const InputDecoration(hintText: 'Enter task name'),
+                    decoration: const InputDecoration(
+                      hintText: 'Enter task name',
+                    ),
                     onChanged: (v) => newTitle = v,
                   ),
                   const SizedBox(height: 20),
@@ -175,7 +218,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: c,
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: selectedColor == c ? Colors.black : Colors.black26,
+                              color: selectedColor == c
+                                  ? Colors.black
+                                  : Colors.black26,
                               width: selectedColor == c ? 3 : 1,
                             ),
                           ),
@@ -186,14 +231,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Cancel'),
+                ),
                 ElevatedButton(
                   onPressed: () {
                     if (newTitle.trim().isNotEmpty) {
                       setState(() {
                         tasks.add({
                           'title': newTitle.trim(),
-                          'color': selectedColor.r,
+                          'color': selectedColor.value,
                           'isQuest': false,
                           'checked': false,
                         });
@@ -214,28 +262,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ====== UI PIECES ======
   Widget _pillHeader() {
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.black, width: 2),
-          boxShadow: [
-            BoxShadow(color: Colors.black12, blurRadius: 6, offset: const Offset(0, 3)),
-          ],
-        ),
-        child: Text(
-          'Home',
-          style: TextStyle(
-            fontFamily: 'HappyMonkey',
-            fontWeight: FontWeight.w600,
-            fontSize: (Theme.of(context).textTheme.bodyMedium?.fontSize ?? 18) + 4,
-            color: Colors.black,
-          ),
-        ),
-      ),
-    );
+    final fontSize =
+        (Theme.of(context).textTheme.bodyMedium?.fontSize ?? 18) + 4;
+    return SharedUIComponents.buildHeaderPill('Home', fontSize: fontSize);
   }
 
   Widget _buildTaskList() {
@@ -253,87 +282,31 @@ class _HomeScreenState extends State<HomeScreen> {
         final isChecked = task['checked'] == true;
         final isAnim = animatingTasks.contains(i);
 
-        return AnimatedSize(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          child: AnimatedOpacity(
-            duration: const Duration(milliseconds: 500),
-            opacity: isAnim ? 0 : 1,
-            child: Container(
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                color: Color(task['color']),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.black, width: 2),
-                boxShadow: [
-                  BoxShadow(color: Colors.black12, blurRadius: 4, offset: const Offset(2, 2)),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          task['title'],
-                          style: const TextStyle(
-                            fontFamily: 'HappyMonkey',
-                            fontSize: 16,
-                            color: Colors.black,
-                          ),
-                        ),
-                        if (isQuest && task.containsKey('xp'))
-                          const SizedBox(height: 2),
-                        if (isQuest && task.containsKey('xp'))
-                          const Text(' ', style: TextStyle(fontSize: 2)), // keeps height consistent
-                      ],
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => _completeTask(i),
-                    child: Container(
-                      width: 26,
-                      height: 26,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: Colors.black, width: 2),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: AnimatedOpacity(
-                        opacity: isChecked ? 1 : 0,
-                        duration: const Duration(milliseconds: 180),
-                        child: const Icon(Icons.check, size: 18, color: Colors.black),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+        return SharedUIComponents.buildTaskItem(
+          title: task['title'],
+          color: Color(task['color']),
+          isChecked: isChecked,
+          onTap: () => _completeTask(i),
+          isAnimating: isAnim,
         );
       },
     );
   }
 
   Widget _dailyTasksCard() {
-    return Container(
+    return SharedUIComponents.buildCard(
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Colors.black, width: 2),
-        boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 6, offset: const Offset(0, 3)),
-        ],
-      ),
+      borderRadius: 22,
       child: Column(
         children: [
           const SizedBox(height: 4),
           const Text(
             'Daily Tasks',
-            style: TextStyle(fontFamily: 'HappyMonkey', fontSize: 20, color: Colors.black),
+            style: TextStyle(
+              fontFamily: 'HappyMonkey',
+              fontSize: 20,
+              color: Colors.black,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 14),
@@ -343,96 +316,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Square-ish buttons to match mock
-  Widget _bottomNav() {
-    return SafeArea(
-      top: false,
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.black, width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 6,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _navItem(Icons.settings, 0, context),
-            _navItem(Icons.auto_graph, 1, context),
-            _navItem(Icons.home, 2, context), // Home highlighted
-            _navItem(Icons.self_improvement, 3, context),
-            _navItem(Icons.person, 4, context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Rounded-square buttons inside the tray
-  Widget _navItem(IconData icon, int idx, BuildContext context) {
-    final isSel = _selectedIndex == idx;
-    const mint = Color(0xFFB6FFB1);
-
-    return Material(
-      elevation: 0,
-      color: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        side: const BorderSide(color: Colors.black, width: 2),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          setState(() => _selectedIndex = idx);
-          if (idx == 0) {
-            Navigator.pushReplacement(context, createFadeRoute(const SettingsScreen()));
-          } else if (idx == 1) {
-            Navigator.pushReplacement(context, createFadeRoute(const InsightsScreen()));
-          } else if (idx == 2) {
-            Navigator.pushReplacement(context, createFadeRoute(const HomeScreen()));
-          } else if (idx == 3) {
-            Navigator.pushReplacement(context, createFadeRoute(const ActivitiesScreen()));
-          } else if (idx == 4) {
-            Navigator.pushReplacement(context, createFadeRoute(const ProfileScreen()));
-          }
-        },
-        child: Container(
-          width: 56,
-          height: 56,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: isSel ? mint : Colors.white, // mint when selected, white idle
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 6,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Icon(icon, color: isSel ? Colors.black : Colors.grey[800], size: 26),
-        ),
-      ),
-    );
-  }
-
-
   // ====== BUILD ======
   @override
   Widget build(BuildContext context) {
-    // soft cream background like the mock
-    const cream = Color(0xFFFFF9DA); // tweak if you want warmer/cooler
     return Scaffold(
-      backgroundColor: cream,
+      backgroundColor: SharedUIComponents.cream,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
@@ -442,21 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 18),
             _dailyTasksCard(),
             const SizedBox(height: 18),
-            Center(
-              child: InkWell(
-                onTap: _showAddTaskDialog,
-                child: Material(
-                  elevation: 3,
-                  shape: const CircleBorder(side: BorderSide(color: Colors.black, width: 2)),
-                  child: Container(
-                    width: 54,
-                    height: 54,
-                    decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
-                    child: const Icon(Icons.add, size: 30, color: Colors.black87),
-                  ),
-                ),
-              ),
-            ),
+            SharedUIComponents.buildAddButton(_showAddTaskDialog),
             const SizedBox(height: 24),
             const Center(
               child: Column(
@@ -484,7 +358,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: _bottomNav(),
+      bottomNavigationBar: SharedNavigation.buildBottomNavigation(
+        selectedIndex: _selectedIndex,
+        context: context,
+      ),
     );
   }
 }

@@ -7,10 +7,11 @@ import 'package:mindshed_app/profile_screen.dart';
 import 'package:mindshed_app/transition_helper.dart';
 import 'package:mindshed_app/insights_engine.dart'
     show DateRange, Grade, InsightsEngine;
+import 'shared_navigation.dart';
+import 'shared_ui_components.dart';
 
 const cream = Color(0xFFFFF9DA);
-const mint  = Color(0xFFB6FFB1);
-
+const mint = Color(0xFFB6FFB1);
 
 class InsightsScreen extends StatefulWidget {
   const InsightsScreen({super.key});
@@ -53,8 +54,9 @@ class _InsightsScreenState extends State<InsightsScreen>
       curve: Curves.easeInOut,
     );
 
-    _dateRangeController =
-        PageController(initialPage: 0); // Start with daily (top)
+    _dateRangeController = PageController(
+      initialPage: 0,
+    ); // Start with daily (top)
 
     // Initialize asynchronously
     _initializeData();
@@ -86,9 +88,11 @@ class _InsightsScreenState extends State<InsightsScreen>
 
   String _capitalizeWords(String input) => input
       .split(' ')
-      .map((w) => w.isEmpty
-          ? w
-          : '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}')
+      .map(
+        (w) => w.isEmpty
+            ? w
+            : '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}',
+      )
       .join(' ');
 
   Future<void> _loadInsights() async {
@@ -128,8 +132,8 @@ class _InsightsScreenState extends State<InsightsScreen>
           _gradeColour = _overallScore >= 75
               ? Colors.green
               : _overallScore >= 50
-                  ? Colors.amber
-                  : Colors.red;
+              ? Colors.amber
+              : Colors.red;
         });
 
         _fadeController.forward(from: 0);
@@ -178,63 +182,84 @@ class _InsightsScreenState extends State<InsightsScreen>
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: isDark
-              ? [
-                  const Color(0xFF1C1D22),
-                  const Color(0xFF2A2B30),
-                ]
-              : [
-                  const Color(0xFFE8E8E8),
-                  Colors.white,
-                ],
+              ? [const Color(0xFF1C1D22), const Color(0xFF2A2B30)]
+              : [const Color(0xFFE8E8E8), Colors.white],
         ),
       ),
       clipBehavior: Clip.hardEdge,
       child: Scaffold(
         backgroundColor: cream,
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          automaticallyImplyLeading: false,
-          elevation: 0,
-          centerTitle: true,
-          title: Text(
-            'Wellness Insights',
-            style: TextStyle(
-              fontFamily: 'HappyMonkey',
-              fontSize: (fontSize ?? 16) + 6,
-              color: textColor,
-            ),
-          ),
-        ),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _error != null
-                ? _buildErrorState(_error!, textColor)
-                : SafeArea(
-                    child: SingleChildScrollView(
-                      physics: const NeverScrollableScrollPhysics(),
+            ? _buildErrorState(_error!, textColor)
+            : SafeArea(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        children: [
+                          SharedUIComponents.buildHeaderPill(
+                            'Wellness Insights',
+                            fontSize: (fontSize ?? 18) + 4,
+                          ),
+                          const SizedBox(height: 18),
+                          _buildTopRow(fontSize, textColor, isDark),
+                        ],
+                      ),
+                    ),
+                    Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Stack(
                           children: [
-                            _buildTopRow(fontSize, textColor, isDark),
-                            const SizedBox(height: 8),
-                            SizedBox(
-                              height: MediaQuery.of(context).size.height * 0.6,
-                              child: FadeTransition(
-                                opacity: _fadeAnimation,
-                                child: _categoryGrades.isEmpty
-                                    ? _buildEmptyState(fontSize, textColor)
-                                    : _buildInsightsGrid(
-                                        fontSize, textColor, isDark),
+                            SingleChildScrollView(
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 60),
+                                child: FadeTransition(
+                                  opacity: _fadeAnimation,
+                                  child: _categoryGrades.isEmpty
+                                      ? _buildEmptyState(fontSize, textColor)
+                                      : _buildInsightsGrid(
+                                          fontSize,
+                                          textColor,
+                                          isDark,
+                                        ),
+                                ),
+                              ),
+                            ),
+                            // Fade out gradient at bottom
+                            Positioned(
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              height: 60,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      cream.withOpacity(0.0),
+                                      cream.withOpacity(0.8),
+                                      cream,
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                  ),
-        bottomNavigationBar: _buildCustomBottomBar(),
+                  ],
+                ),
+              ),
+        bottomNavigationBar: SharedNavigation.buildBottomNavigation(
+          selectedIndex: _selectedIndex,
+          context: context,
+        ),
       ),
     );
   }
@@ -252,11 +277,7 @@ class _InsightsScreenState extends State<InsightsScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.error_outline,
-              color: Colors.red,
-              size: 48,
-            ),
+            Icon(Icons.error_outline, color: Colors.red, size: 48),
             const SizedBox(height: 16),
             Text(
               error,
@@ -274,42 +295,50 @@ class _InsightsScreenState extends State<InsightsScreen>
   }
 
   Widget _buildEmptyState(double? fontSize, Color? textColor) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      margin: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.insights_outlined,
-            color: Colors.grey.shade600,
-            size: 48,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'Category Breakdown',
+          style: TextStyle(
+            fontFamily: 'HappyMonkey',
+            fontSize: (fontSize ?? 16) + 1,
+            color: textColor,
           ),
-          const SizedBox(height: 12),
-          Text(
-            'No insights available yet',
-            style: TextStyle(
-              fontFamily: 'HappyMonkey',
-              fontSize: (fontSize ?? 16) + 1,
-              color: textColor,
-            ),
-            textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 4),
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Column(
+            children: [
+              Icon(
+                Icons.insights_outlined,
+                color: Colors.grey.shade600,
+                size: 48,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'No insights available yet',
+                style: TextStyle(
+                  fontFamily: 'HappyMonkey',
+                  fontSize: (fontSize ?? 16) + 1,
+                  color: textColor,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Start logging your wellness data to see personalized insights and recommendations.',
+                style: TextStyle(
+                  fontSize: (fontSize ?? 16) - 1,
+                  color: textColor?.withOpacity(0.7),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            'Start logging your wellness data to see personalized insights and recommendations.',
-            style: TextStyle(
-              fontSize: (fontSize ?? 16) - 1,
-              color: textColor?.withOpacity(0.7),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -326,19 +355,20 @@ class _InsightsScreenState extends State<InsightsScreen>
           ),
         ),
         const SizedBox(height: 4),
-        ..._categoryGrades.entries.map((e) =>
-            _buildGradeCard(e.key, e.value, fontSize, textColor, isDark)),
+        ..._categoryGrades.entries.map(
+          (e) => _buildGradeCard(e.key, e.value, fontSize, textColor, isDark),
+        ),
       ],
     );
   }
 
   Widget _buildTopRow(double? fontSize, Color? textColor, bool isDark) => Row(
-        children: [
-          Expanded(child: _buildDateRangeCard(fontSize, textColor, isDark)),
-          const SizedBox(width: 8),
-          Expanded(child: _buildWellnessScoreCard(fontSize, textColor, isDark)),
-        ],
-      );
+    children: [
+      Expanded(child: _buildDateRangeCard(fontSize, textColor, isDark)),
+      const SizedBox(width: 8),
+      Expanded(child: _buildWellnessScoreCard(fontSize, textColor, isDark)),
+    ],
+  );
 
   Widget _buildDateRangeCard(double? fontSize, Color? textColor, bool isDark) =>
       Container(
@@ -355,8 +385,8 @@ class _InsightsScreenState extends State<InsightsScreen>
             ),
           ],
           border: Border.all(
-            color: isDark ? Colors.white10 : Colors.grey.shade200,
-            width: 1,
+            color: isDark ? Colors.white10 : Colors.black,
+            width: isDark ? 1 : 2,
           ),
         ),
         child: Column(
@@ -387,14 +417,18 @@ class _InsightsScreenState extends State<InsightsScreen>
                   GestureDetector(
                     onTap: () {
                       if (_selectedRange == DateRange.weekly) {
-                        _dateRangeController.animateToPage(0,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut);
+                        _dateRangeController.animateToPage(
+                          0,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
                         _onDateRangeChanged(DateRange.daily);
                       } else if (_selectedRange == DateRange.monthly) {
-                        _dateRangeController.animateToPage(1,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut);
+                        _dateRangeController.animateToPage(
+                          1,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
                         _onDateRangeChanged(DateRange.weekly);
                       }
                     },
@@ -419,29 +453,32 @@ class _InsightsScreenState extends State<InsightsScreen>
                             final ranges = [
                               DateRange.daily, // Top - Daily
                               DateRange.weekly, // Middle - Weekly
-                              DateRange.monthly // Bottom - Monthly
+                              DateRange.monthly, // Bottom - Monthly
                             ];
                             _onDateRangeChanged(ranges[index]);
                           },
                           children: [
                             _buildDateRangeOption(
-                                DateRange.daily,
-                                'Daily',
-                                fontSize,
-                                isDark,
-                                _selectedRange == DateRange.daily),
+                              DateRange.daily,
+                              'Daily',
+                              fontSize,
+                              isDark,
+                              _selectedRange == DateRange.daily,
+                            ),
                             _buildDateRangeOption(
-                                DateRange.weekly,
-                                'Weekly',
-                                fontSize,
-                                isDark,
-                                _selectedRange == DateRange.weekly),
+                              DateRange.weekly,
+                              'Weekly',
+                              fontSize,
+                              isDark,
+                              _selectedRange == DateRange.weekly,
+                            ),
                             _buildDateRangeOption(
-                                DateRange.monthly,
-                                'Monthly',
-                                fontSize,
-                                isDark,
-                                _selectedRange == DateRange.monthly),
+                              DateRange.monthly,
+                              'Monthly',
+                              fontSize,
+                              isDark,
+                              _selectedRange == DateRange.monthly,
+                            ),
                           ],
                         ),
                       ),
@@ -451,14 +488,18 @@ class _InsightsScreenState extends State<InsightsScreen>
                   GestureDetector(
                     onTap: () {
                       if (_selectedRange == DateRange.daily) {
-                        _dateRangeController.animateToPage(1,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut);
+                        _dateRangeController.animateToPage(
+                          1,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
                         _onDateRangeChanged(DateRange.weekly);
                       } else if (_selectedRange == DateRange.weekly) {
-                        _dateRangeController.animateToPage(2,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut);
+                        _dateRangeController.animateToPage(
+                          2,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
                         _onDateRangeChanged(DateRange.monthly);
                       }
                     },
@@ -478,8 +519,13 @@ class _InsightsScreenState extends State<InsightsScreen>
         ),
       );
 
-  Widget _buildDateRangeOption(DateRange range, String label, double? fontSize,
-      bool isDark, bool isSelected) {
+  Widget _buildDateRangeOption(
+    DateRange range,
+    String label,
+    double? fontSize,
+    bool isDark,
+    bool isSelected,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
       decoration: BoxDecoration(
@@ -498,8 +544,9 @@ class _InsightsScreenState extends State<InsightsScreen>
             label,
             style: TextStyle(
               fontFamily: 'HappyMonkey',
-              fontSize:
-                  isSelected ? (fontSize ?? 16) + 1 : (fontSize ?? 16) - 2,
+              fontSize: isSelected
+                  ? (fontSize ?? 16) + 1
+                  : (fontSize ?? 16) - 2,
               color: isSelected
                   ? Colors.blue
                   : (isDark ? Colors.white70 : Colors.black54),
@@ -523,125 +570,121 @@ class _InsightsScreenState extends State<InsightsScreen>
   }
 
   Widget _buildWellnessScoreCard(
-          double? fontSize, Color? textColor, bool isDark) =>
-      Container(
-        padding: const EdgeInsets.all(12),
-        height: 180,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2A2B30) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: isDark ? Colors.black26 : Colors.black12,
-              blurRadius: 8,
-              offset: const Offset(0, 3),
+    double? fontSize,
+    Color? textColor,
+    bool isDark,
+  ) => Container(
+    padding: const EdgeInsets.all(12),
+    height: 180,
+    decoration: BoxDecoration(
+      color: isDark ? const Color(0xFF2A2B30) : Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: isDark ? Colors.black26 : Colors.black12,
+          blurRadius: 8,
+          offset: const Offset(0, 3),
+        ),
+      ],
+      border: Border.all(
+        color: isDark ? Colors.white10 : Colors.black,
+        width: isDark ? 1 : 2,
+      ),
+    ),
+    child: Column(
+      children: [
+        Row(
+          children: [
+            Icon(Icons.favorite_rounded, color: _gradeColour, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              'Wellness Score',
+              style: TextStyle(
+                fontFamily: 'HappyMonkey',
+                fontSize: (fontSize ?? 16) > 20 ? 18 : (fontSize ?? 16) + 1,
+                color: textColor,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ],
-          border: Border.all(
-            color: isDark ? Colors.white10 : Colors.grey.shade200,
-            width: 1,
-          ),
         ),
-        child: Column(
-          children: [
-            Row(
+        const SizedBox(height: 12),
+        SizedBox(
+          width: 70,
+          height: 70,
+          child: TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: 0, end: _overallScore / 100),
+            duration: const Duration(milliseconds: 800),
+            builder: (context, value, _) => Stack(
+              alignment: Alignment.center,
               children: [
-                Icon(
-                  Icons.favorite_rounded,
-                  color: _gradeColour,
-                  size: 20,
+                SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: CircularProgressIndicator(
+                    value: value,
+                    strokeWidth: 6,
+                    backgroundColor: isDark
+                        ? Colors.grey.shade700
+                        : Colors.grey.shade300,
+                    valueColor: AlwaysStoppedAnimation<Color>(_gradeColour),
+                  ),
                 ),
-                const SizedBox(width: 8),
                 Text(
-                  'Wellness Score',
+                  '$_overallScore%',
                   style: TextStyle(
                     fontFamily: 'HappyMonkey',
-                    fontSize: (fontSize ?? 16) > 20 ? 18 : (fontSize ?? 16) + 1,
+                    fontSize: (fontSize ?? 16) > 20 ? 16 : (fontSize ?? 16),
                     color: textColor,
                   ),
+                  textAlign: TextAlign.center,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: 70,
-              height: 70,
-              child: TweenAnimationBuilder<double>(
-                tween: Tween<double>(begin: 0, end: _overallScore / 100),
-                duration: const Duration(milliseconds: 800),
-                builder: (context, value, _) => Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SizedBox(
-                      width: 60,
-                      height: 60,
-                      child: CircularProgressIndicator(
-                        value: value,
-                        strokeWidth: 6,
-                        backgroundColor: isDark
-                            ? Colors.grey.shade700
-                            : Colors.grey.shade300,
-                        valueColor: AlwaysStoppedAnimation<Color>(_gradeColour),
-                      ),
-                    ),
-                    Text(
-                      '$_overallScore%',
-                      style: TextStyle(
-                        fontFamily: 'HappyMonkey',
-                        fontSize: (fontSize ?? 16) > 20 ? 16 : (fontSize ?? 16),
-                        color: textColor,
-                      ),
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            if (_overallScore > 0) ...[
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _gradeColour.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: _gradeColour),
-                ),
-                child: Text(
-                  _getScoreDescription(_overallScore),
-                  style: TextStyle(
-                    fontSize: (fontSize ?? 16) > 20 ? 14 : (fontSize ?? 16) - 2,
-                    color: _gradeColour,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ] else ...[
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.grey,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey),
-                ),
-                child: Text(
-                  'No Data',
-                  style: TextStyle(
-                    fontSize: (fontSize ?? 16) > 20 ? 14 : (fontSize ?? 16) - 2,
-                    color: Colors.grey.shade600,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
-          ],
+          ),
         ),
-      );
+        const SizedBox(height: 8),
+        if (_overallScore > 0) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: _gradeColour.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: _gradeColour),
+            ),
+            child: Text(
+              _getScoreDescription(_overallScore),
+              style: TextStyle(
+                fontSize: (fontSize ?? 16) > 20 ? 14 : (fontSize ?? 16) - 2,
+                color: _gradeColour,
+              ),
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ] else ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.grey,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey),
+            ),
+            child: Text(
+              'No Data',
+              style: TextStyle(
+                fontSize: (fontSize ?? 16) > 20 ? 14 : (fontSize ?? 16) - 2,
+                color: Colors.grey.shade600,
+              ),
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ],
+    ),
+  );
 
   String _getScoreDescription(int score) {
     if (score == 0) return 'No Data';
@@ -651,8 +694,13 @@ class _InsightsScreenState extends State<InsightsScreen>
     return 'Needs Work';
   }
 
-  Widget _buildGradeCard(String key, Grade grade, double? fontSize,
-      Color? textColor, bool isDark) {
+  Widget _buildGradeCard(
+    String key,
+    Grade grade,
+    double? fontSize,
+    Color? textColor,
+    bool isDark,
+  ) {
     // Default values if nulls are provided
     final finalFontSize = fontSize ?? 14.0;
     final finalTextColor = textColor ?? Colors.black;
@@ -698,19 +746,12 @@ class _InsightsScreenState extends State<InsightsScreen>
             offset: const Offset(0, 2),
           ),
         ],
-        border: Border.all(
-          color: iconColor,
-          width: 1,
-        ),
+        border: Border.all(color: iconColor, width: 1),
       ),
       child: Row(
         children: [
           // Icon on the left
-          Icon(
-            icon,
-            color: iconColor,
-            size: 24,
-          ),
+          Icon(icon, color: iconColor, size: 24),
           const SizedBox(width: 12),
           // Text label in the middle
           Expanded(
@@ -724,12 +765,7 @@ class _InsightsScreenState extends State<InsightsScreen>
             ),
           ),
           // Emoji on the right
-          Text(
-            emoji,
-            style: TextStyle(
-              fontSize: finalFontSize + 4,
-            ),
-          ),
+          Text(emoji, style: TextStyle(fontSize: finalFontSize + 4)),
         ],
       ),
     );
@@ -755,77 +791,5 @@ class _InsightsScreenState extends State<InsightsScreen>
       default:
         return Icons.help_outline; // Fallback icon for unknown categories
     }
-  }
-
-  Widget _buildCustomBottomBar() {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(12, 4, 12, 32),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.black, width: 2),
-        boxShadow: const [
-          BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(0, -2)),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildNavItem(icon: Icons.settings, index: 0),
-          _buildNavItem(icon: Icons.auto_graph, index: 1),
-          _buildNavItem(icon: Icons.home, index: 2),
-          _buildNavItem(icon: Icons.self_improvement, index: 3),
-          _buildNavItem(icon: Icons.person, index: 4),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem({
-    required IconData icon,
-    required int index,
-    bool isHome = false, // kept for compatibility
-  }) {
-    final isSelected = (_selectedIndex == index);
-    const mint = Color(0xFFB6FFB1); // local const; no class vars changed
-    final bg = isSelected ? mint : Colors.white;
-    final ic = Colors.black;
-
-    return Material(
-      color: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: const BorderSide(color: Colors.black, width: 2),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: () {
-          setState(() => _selectedIndex = index);
-          if (index == 0) {
-            Navigator.pushReplacement(context, createFadeRoute(const SettingsScreen()));
-          } else if (index == 1) {
-            Navigator.pushReplacement(context, createFadeRoute(const InsightsScreen()));
-          } else if (index == 2) {
-            Navigator.pushReplacement(context, createFadeRoute(const HomeScreen()));
-          } else if (index == 3) {
-            Navigator.pushReplacement(context, createFadeRoute(const ActivitiesScreen()));
-          } else if (index == 4) {
-            Navigator.pushReplacement(context, createFadeRoute(const ProfileScreen()));
-          }
-        },
-        child: Container(
-          width: 56,
-          height: 56,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 2)],
-          ),
-          child: Icon(icon, color: ic, size: 26),
-        ),
-      ),
-    );
   }
 }
