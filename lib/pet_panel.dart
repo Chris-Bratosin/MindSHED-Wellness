@@ -9,7 +9,13 @@ import 'pet_list_screen.dart';
 
 /// Safe SVG (won’t crash if asset missing/empty).
 class SafeSvg extends StatelessWidget {
-  const SafeSvg(this.asset, {super.key, this.width, this.height, this.fit = BoxFit.contain});
+  const SafeSvg(
+    this.asset, {
+    super.key,
+    this.width,
+    this.height,
+    this.fit = BoxFit.contain,
+  });
   final String? asset;
   final double? width;
   final double? height;
@@ -106,8 +112,14 @@ class _PetPanelState extends State<PetPanel> {
           onSubmitted: (_) => Navigator.pop(ctx, controller.text.trim()),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: const Text('Save')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+            child: const Text('Save'),
+          ),
         ],
       ),
     );
@@ -127,18 +139,18 @@ class _PetPanelState extends State<PetPanel> {
         if (mounted) setState(() => _petName = newName);
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Pet name set to "$newName"')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Pet name set to "$newName"')));
         }
       }
     }
   }
 
   Future<void> _openPetList() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const PetListScreen()),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const PetListScreen()));
   }
 
   @override
@@ -172,7 +184,6 @@ class _PetPanelState extends State<PetPanel> {
         final asset = petAssetFor(selectedId);
 
         return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: theme.cardColor,
@@ -183,7 +194,7 @@ class _PetPanelState extends State<PetPanel> {
                 color: Colors.black12,
                 blurRadius: 10,
                 offset: const Offset(0, 4),
-              )
+              ),
             ],
           ),
           child: Column(
@@ -235,14 +246,18 @@ class _PetPanelState extends State<PetPanel> {
                     backgroundColor: MaterialStateProperty.all(mint),
                     side: MaterialStateProperty.all(border2),
                     shape: MaterialStateProperty.all(
-                      RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28),
+                      ),
                     ),
                     padding: MaterialStateProperty.all(
                       const EdgeInsets.symmetric(vertical: 14),
                     ),
                     foregroundColor: MaterialStateProperty.all(Colors.black),
                     textStyle: MaterialStateProperty.all(
-                      theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                      theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   child: const Text('Select Pet'),

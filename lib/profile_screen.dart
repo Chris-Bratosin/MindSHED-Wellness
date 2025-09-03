@@ -220,7 +220,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
 
             const SizedBox(height: 12),
-            SharedUIComponents.buildCard(child: PetPanel()),
+            PetPanel(),
 
             const SizedBox(height: 12),
             // quote
