@@ -84,7 +84,7 @@ class _InputMetricsScreenState extends State<InputMetricsScreen> {
     return Scaffold(
       backgroundColor: Theme.of(ctx).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Color(0xFFFFF9DA),
         elevation: 0,
         centerTitle: true,
         title: Text(
@@ -104,21 +104,7 @@ class _InputMetricsScreenState extends State<InputMetricsScreen> {
         ),
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: isDark
-                ? [
-                    const Color(0xFF1C1D22),
-                    const Color(0xFF2A2B30).withOpacity(0.8),
-                  ]
-                : [
-                    const Color(0xFFE8E8E8),
-                    Colors.white.withOpacity(0.9),
-                  ],
-          ),
-        ),
+        color: const Color(0xFFFFF9DA),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Column(
@@ -232,7 +218,7 @@ class _InputMetricsScreenState extends State<InputMetricsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black26 : Colors.black.withOpacity(0.08),
+            color: isDark ? Colors.black26 : Colors.black12,
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -250,7 +236,7 @@ class _InputMetricsScreenState extends State<InputMetricsScreen> {
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Icon(
@@ -328,7 +314,7 @@ class _InputMetricsScreenState extends State<InputMetricsScreen> {
           decoration: BoxDecoration(
             color: accent.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: accent.withOpacity(0.3)),
+            border: Border.all(color: accent.withOpacity(0.6)),
           ),
           child: Text(
             _m[displayKey] ?? '—',

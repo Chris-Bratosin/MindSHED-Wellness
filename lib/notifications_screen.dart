@@ -15,7 +15,26 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   bool muteNotifications = false;
   bool muteSounds = false;
 
+  // EXISTING notifications list (logic unchanged)
   final List<Map<String, String>> notifications = [];
+
+  // ---- UI-only state for the reminder rows (does not change your scheduling logic)
+  final Map<String, bool> _reminderOn = {
+    'Hydration Reminder': false,
+    'Sleep Reminder': false,
+    'Eating Reminder': false,
+    'Exercise Reminder': false,
+  };
+  final Map<String, TimeOfDay?> _reminderTime = {
+    'Hydration Reminder': null,
+    'Sleep Reminder': null,
+    'Eating Reminder': null,
+    'Exercise Reminder': null,
+  };
+
+  // Palette for the mock
+  static const cream = Color(0xFFFFF9DA);
+  static const mint  = Color(0xFFB6FFB1);
 
   @override
   void initState() {
@@ -23,6 +42,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     _loadSettings();
   }
 
+  // ---------------- EXISTING LOGIC (unchanged) ----------------
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -79,7 +99,42 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       androidAllowWhileIdle: true,
       matchDateTimeComponents: DateTimeComponents.time,
       uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+      UILocalNotificationDateInterpretation.absoluteTime,
+    );
+  }
+  // ------------------------------------------------------------
+
+  // UI-only: show a time picker dialog and store the choice locally
+  Future<void> _pickReminderTime(String label) async {
+    final initial = _reminderTime[label] ?? TimeOfDay.now();
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: initial,
+      helpText: 'When would you like to be reminded?',
+      confirmText: 'Confirm',
+    );
+    if (!mounted) return;
+
+    if (picked == null) {
+      // user cancelled: turn the toggle back off
+      setState(() {
+        _reminderOn[label] = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _reminderTime[label] = picked;
+    });
+
+    // purely UI feedback; does not change your scheduling logic
+    final t = picked.format(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$label set for $t'),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
     );
   }
 
@@ -90,73 +145,183 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final fontSize = theme.textTheme.bodyMedium?.fontSize ?? 18;
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: cream,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: cream,
         elevation: 0,
         centerTitle: true,
-        title: Text(
-          'Notifications',
-          style: TextStyle(
-            fontFamily: 'HappyMonkey',
-            fontSize: fontSize + 6,
-            color: textColor,
-          ),
-        ),
+        title: _headerPill('Notifications', fontSize + 6),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Column(
           children: [
-            Expanded(
-              child: notifications.isEmpty
-                  ? _buildEmptyNotificationsState(fontSize)
-                  : ListView.builder(
-                      itemCount: notifications.length,
-                      itemBuilder: (context, index) {
-                        final notif = notifications[index];
-                        return Container(
-                          margin: const EdgeInsets.symmetric(vertical: 6),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: theme.cardColor,
-                            border: Border.all(color: Colors.black),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                notif['title']!,
-                                style: TextStyle(
-                                  fontFamily: 'HappyMonkey',
-                                  fontSize: fontSize,
-                                  color: textColor,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                notif['description']!,
-                                style: TextStyle(
-                                  fontFamily: 'HappyMonkey',
-                                  fontSize: fontSize - 2,
-                                  color: textColor?.withOpacity(0.6),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-            ),
-            const SizedBox(height: 20),
+            // Notifications list section OR empty state
+            if (notifications.isEmpty)
+              Expanded(child: _buildEmptyNotificationsState(fontSize))
+            else
+              _notificationsCard(fontSize, textColor),
+
+            const SizedBox(height: 10),
+
+            // Reminders section
+            _remindersCard(fontSize, textColor),
+
+            const SizedBox(height: 10),
+
+            // Bottom settings block (UNCHANGED logic/UI from your code)
             _buildSettingsSection(fontSize),
-            const SizedBox(height: 20),
+
+            const SizedBox(height: 10),
           ],
         ),
       ),
     );
   }
+
+  // --------- UI building blocks (mockup styling) ---------
+
+  Widget _headerPill(String text, double size) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: Colors.black, width: 2),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black12,
+          blurRadius: 6,
+          offset: const Offset(0, 3),
+        )
+      ],
+    ),
+    child: Text(
+      text,
+      style: TextStyle(
+        fontFamily: 'HappyMonkey',
+        fontSize: size,
+        color: Colors.black,
+      ),
+    ),
+  );
+
+  Widget _notificationsCard(double fontSize, Color? textColor) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.black, width: 1.8),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        itemCount: notifications.length,
+        separatorBuilder: (_, __) => Divider(
+          height: 1,
+          color: Colors.black12,
+        ),
+        itemBuilder: (context, index) {
+          final notif = notifications[index];
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  notif['title'] ?? '',
+                  style: TextStyle(
+                    fontFamily: 'HappyMonkey',
+                    fontSize: fontSize,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  notif['description'] ?? '',
+                  style: TextStyle(
+                    fontFamily: 'HappyMonkey',
+                    fontSize: fontSize - 2,
+                    color: textColor?.withOpacity(0.6),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _remindersCard(double fontSize, Color? textColor) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: cream,
+        border: Border.all(color: Colors.black, width: 1.8),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          _reminderRow('Hydration Reminder', fontSize, textColor),
+          const SizedBox(height: 10),
+          _reminderRow('Sleep Reminder', fontSize, textColor),
+          const SizedBox(height: 10),
+          _reminderRow('Eating Reminder', fontSize, textColor),
+          const SizedBox(height: 10),
+          _reminderRow('Exercise Reminder', fontSize, textColor),
+        ],
+      ),
+    );
+  }
+
+  Widget _reminderRow(String label, double fontSize, Color? textColor) {
+    final enabled = _reminderOn[label] ?? false;
+    final time = _reminderTime[label];
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Color(0xFFB6FFB1),
+        border: Border.all(color: Colors.black, width: 1.6),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              time == null ? label : '$label  •  ${time.format(context)}',
+              style: TextStyle(
+                fontFamily: 'HappyMonkey',
+                fontSize: fontSize - 1,
+                color: textColor,
+              ),
+            ),
+          ),
+          Switch(
+            value: enabled,
+            onChanged: (val) async {
+              setState(() => _reminderOn[label] = val);
+              if (val) {
+                await _pickReminderTime(label);
+              } else {
+                setState(() => _reminderTime[label] = null);
+              }
+            },
+            activeThumbColor: Colors.black,
+            inactiveThumbColor: Colors.black,
+            inactiveTrackColor: Colors.black26,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --------- your existing empty state & settings section (unchanged) ---------
 
   Widget _buildEmptyNotificationsState(double fontSize) {
     return Center(
@@ -187,8 +352,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               color: Theme.of(context)
                   .textTheme
                   .bodyMedium
-                  ?.color
-                  ?.withOpacity(0.7),
+                  ?.color,
             ),
             textAlign: TextAlign.center,
           ),
@@ -278,7 +442,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: Theme.of(context).brightness == Brightness.dark
+          activeThumbColor: Theme.of(context).brightness == Brightness.dark
               ? Colors.white
               : Colors.black,
           inactiveThumbColor: Theme.of(context).brightness == Brightness.dark
@@ -320,15 +484,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 const SizedBox(height: 20),
                 _buildNotificationToggle('App Sounds', true, fontSize),
                 const SizedBox(height: 8),
-                _buildNotificationToggle(
-                    'Notification Sounds', false, fontSize),
+                _buildNotificationToggle('Notification Sounds', false, fontSize),
                 const SizedBox(height: 8),
                 _buildNotificationToggle('Ambient Audio', true, fontSize),
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () => Navigator.of(context).pop(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFB6FFB1),
+                    backgroundColor: mint,
                     foregroundColor: Colors.black,
                     side: const BorderSide(color: Colors.black, width: 1),
                     shape: RoundedRectangleBorder(
@@ -367,9 +530,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         Switch(
           value: initialValue,
           onChanged: (value) {
-            // Placeholder logic for now
+            // Placeholder logic for now (UI only)
           },
-          activeColor: const Color(0xFFB6FFB1),
+          activeThumbColor: mint,
           inactiveThumbColor: Colors.grey.shade400,
           inactiveTrackColor: Colors.grey.shade300,
         ),

@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
+import 'activities_screen.dart'; // for Back -> Activities
 
 class QuizScreen extends StatefulWidget {
   const QuizScreen({super.key});
 
   @override
-  _QuizScreenState createState() => _QuizScreenState();
+  State<QuizScreen> createState() => _QuizScreenState();
 }
 
 class _QuizScreenState extends State<QuizScreen> {
+  // ---------- palette ----------
+  static const cream = Color(0xFFFFF9DA);
+  static const mint = Color(0xFFB6FFB1);
+  static const panel = Color(0xFFFFFFFF);
+  static const header = Color(0xFFF1EEDB);
+
+  // ---------- quizzes & questions (unchanged) ----------
   final Map<String, List<Map<String, dynamic>>> quizData = {
     "Learn about your stress": [
       {
@@ -138,6 +146,7 @@ class _QuizScreenState extends State<QuizScreen> {
     ],
   };
 
+  // ---------- state ----------
   String? selectedTopic;
   List<Map<String, dynamic>> selectedQuestions = [];
   int currentQuestionIndex = 0;
@@ -145,10 +154,11 @@ class _QuizScreenState extends State<QuizScreen> {
   int score = 0;
   bool quizCompleted = false;
 
+  // ---------- actions ----------
   void startQuiz(String topic) {
     setState(() {
       selectedTopic = topic;
-      selectedQuestions = List.from(quizData[topic]!);
+      selectedQuestions = List<Map<String, dynamic>>.from(quizData[topic]!);
       selectedQuestions.shuffle();
       selectedQuestions = selectedQuestions.take(5).toList();
       currentQuestionIndex = 0;
@@ -158,287 +168,412 @@ class _QuizScreenState extends State<QuizScreen> {
     });
   }
 
-  void nextQuestion() {
-    if (selectedAnswer == selectedQuestions[currentQuestionIndex]['answer']) {
+  void _nextQuestion() {
+    if (selectedAnswer ==
+        selectedQuestions[currentQuestionIndex]['answer']) {
       score++;
     }
-
     if (currentQuestionIndex < selectedQuestions.length - 1) {
       setState(() {
         currentQuestionIndex++;
         selectedAnswer = null;
       });
     } else {
-      setState(() {
-        quizCompleted = true;
-      });
+      setState(() => quizCompleted = true);
     }
   }
 
-  void restartQuiz() {
+  void _restartToMenu() {
     setState(() {
-      selectedTopic = null;
+      selectedTopic = null; // back to quiz list
       quizCompleted = false;
+      selectedAnswer = null;
+      currentQuestionIndex = 0;
+      score = 0;
     });
   }
 
+  void _backToActivities() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const ActivitiesScreen()),
+    );
+  }
+
+  // ---------- UI ----------
   @override
   Widget build(BuildContext context) {
-    final double fontSize =
-        Theme.of(context).textTheme.bodyMedium?.fontSize ?? 18;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Center(
+      backgroundColor: cream,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          children: [
+            _pillHeader('Quizzes'),
+            const SizedBox(height: 14),
+
+            // ====== QUIZ LIST ======
+            if (selectedTopic == null && !quizCompleted) ...[
+              _quizListCard(),
+              const SizedBox(height: 12),
+              _mintButton('Back', _backToActivities), // To Activities
+            ]
+
+            // ====== IN-QUIZ ======
+            else if (!quizCompleted) ...[
+              _topicHeader(selectedTopic!),
+              const SizedBox(height: 12),
+              _questionBubble(
+                counter:
+                '${currentQuestionIndex + 1}/${selectedQuestions.length}',
+                question: selectedQuestions[currentQuestionIndex]['question'],
+                options: List<String>.from(
+                  selectedQuestions[currentQuestionIndex]['options'],
+                ),
+              ),
+            ]
+
+            // ====== FINISHED ======
+            else ...[
+                _resultBubble(score, selectedQuestions.length),
+                const SizedBox(height: 16),
+                _mintButton('Finish', _restartToMenu), // back to list
+              ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ---------- pieces ----------
+  Widget _pillHeader(String title) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.black, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Text(
+          title,
+          style: const TextStyle(
+            fontFamily: 'HappyMonkey',
+            fontSize: 22,
+            color: Colors.black,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _quizListCard() {
+    final font = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 16.0;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: panel,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.black, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+      child: Column(
+        children: [
+          const Text(
+            '“Discover more about\nyour wellness”',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'HappyMonkey',
+              fontSize: 16,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ...quizData.keys.map(
+                (title) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: _quizChip(
+                title,
+                onTap: () => startQuiz(title),
+                fontSize: font,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _quizChip(String text,
+      {required VoidCallback onTap, required double fontSize}) {
+    return Material(
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: const BorderSide(color: Colors.black, width: 2),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+          decoration: BoxDecoration(
+            color: mint,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'HappyMonkey',
+                fontSize: fontSize,
+                color: Colors.black,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _topicHeader(String title) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      decoration: BoxDecoration(
+        color: header,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.black, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          )
+        ],
+      ),
+      child: Center(
+        child: Text(
+          title,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontFamily: 'HappyMonkey',
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+            color: Colors.black,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _questionBubble({
+    required String counter,
+    required String question,
+    required List<String> options,
+  }) {
+    final font = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 16.0;
+
+    return Stack(
+      alignment: Alignment.topLeft,
+      children: [
+        // Bubble body
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(16, 28, 16, 16),
+          decoration: BoxDecoration(
+            color: panel,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.black, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (selectedTopic == null && !quizCompleted) ...[
-                const SizedBox(height: 10),
-
-                // Quiz selection container with white background
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.black, width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.shade300,
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        "Discover more about\nyour wellness",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: fontSize + 2,
-                          fontFamily: 'HappyMonkey',
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      ...quizData.keys.map(
-                        (quiz) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: isDark
-                                  ? const Color(0xFF40D404)
-                                  : Colors.green.shade200,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                side: const BorderSide(
-                                    color: Colors.black, width: 2),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 14, horizontal: 24),
-                              elevation: 2,
-                            ),
-                            onPressed: () => startQuiz(quiz),
-                            child: Text(
-                              quiz,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: fontSize,
-                                fontFamily: 'HappyMonkey',
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+              // question line
+              Center(
+                child: Text(
+                  question,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'HappyMonkey',
+                    fontSize: font,
+                    color: Colors.black87,
                   ),
                 ),
-              ] else if (!quizCompleted) ...[
-                // Quiz title
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF40D404)
-                        : Colors.green.shade200,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.black, width: 2),
+              ),
+              const SizedBox(height: 12),
+
+              // options
+              ...options.map(
+                    (o) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  leading: Icon(
+                    selectedAnswer == o
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_off,
+                    color: Colors.black87,
                   ),
-                  child: Text(
-                    selectedTopic!,
-                    textAlign: TextAlign.center,
+                  title: Text(
+                    o,
                     style: TextStyle(
-                      fontSize: fontSize + 2,
-                      fontWeight: FontWeight.bold,
                       fontFamily: 'HappyMonkey',
-                      color: Colors.black,
+                      fontSize: font,
+                      color: Colors.black87,
                     ),
                   ),
+                  onTap: () => setState(() => selectedAnswer = o),
                 ),
+              ),
 
-                const SizedBox(height: 20),
-
-                // Question container
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.black, width: 2),
-                    boxShadow: isDark
-                        ? []
-                        : [
-                            BoxShadow(
-                                color: Colors.grey.shade300, blurRadius: 6)
-                          ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Question counter at the top
-                      Container(
-                        alignment: Alignment.center,
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF40D404)
-                              : Colors.green.shade100,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.black, width: 1),
-                        ),
-                        child: Text(
-                          "Question ${currentQuestionIndex + 1} of ${selectedQuestions.length}",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'HappyMonkey',
-                            fontSize: fontSize - 2,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-
-                      // Question text
-                      Text(
-                        selectedQuestions[currentQuestionIndex]['question'],
-                        style: TextStyle(
-                          fontSize: fontSize,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'HappyMonkey',
-                          color: Theme.of(context).textTheme.bodyMedium?.color,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Multiple choice options
-                      ...selectedQuestions[currentQuestionIndex]['options']
-                          .map<Widget>((option) => ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: Icon(
-                                  selectedAnswer == option
-                                      ? Icons.radio_button_checked
-                                      : Icons.radio_button_off,
-                                  color: Theme.of(context).iconTheme.color,
-                                ),
-                                title: Text(
-                                  option,
-                                  style: TextStyle(
-                                    fontSize: fontSize,
-                                    fontFamily: 'HappyMonkey',
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.color,
-                                  ),
-                                ),
-                                onTap: () => setState(() {
-                                  selectedAnswer = option;
-                                }),
-                              )),
-
-                      if (selectedAnswer != null) ...[
-                        const SizedBox(height: 16),
-                        Center(
-                          child: ElevatedButton(
-                            onPressed: nextQuestion,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 12),
-                              side: const BorderSide(
-                                  color: Colors.black, width: 2),
-                            ),
-                            child: Text(
-                              "Next",
-                              style: TextStyle(
-                                fontSize: fontSize,
-                                color: Colors.white,
-                                fontFamily: 'HappyMonkey',
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ] else ...[
-                const SizedBox(height: 40),
-                Text(
-                  "Quiz Completed!",
-                  style: TextStyle(
-                    fontSize: fontSize + 4,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'HappyMonkey',
-                    color: Theme.of(context).textTheme.bodyMedium?.color,
-                  ),
-                ),
+              if (selectedAnswer != null) ...[
                 const SizedBox(height: 10),
-                Text(
-                  "Your final score is: $score / ${selectedQuestions.length}",
-                  style: TextStyle(
-                    fontSize: fontSize,
-                    fontFamily: 'HappyMonkey',
-                    color: Theme.of(context).textTheme.bodyMedium?.color,
-                  ),
-                ),
-                const SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: restartQuiz,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.shade400,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 14),
-                    side: const BorderSide(color: Colors.black, width: 2),
-                  ),
-                  child: Text(
-                    "Finish",
-                    style: TextStyle(
-                      fontSize: fontSize,
-                      fontFamily: 'HappyMonkey',
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
+                _mintButton('Next', _nextQuestion),
               ],
             ],
+          ),
+        ),
+
+        // small counter pill (like mock “1/5”)
+        Positioned(
+          left: 10,
+          top: 10,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: mint,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.black, width: 2),
+            ),
+            child: Text(
+              counter,
+              style: const TextStyle(
+                fontFamily: 'HappyMonkey',
+                color: Colors.black,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ),
+
+        // little tail pointer
+        Positioned(
+          bottom: -10,
+          left: 28,
+          child: Transform.rotate(
+            angle: 3.14159 / 4,
+            child: Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: panel,
+                border: Border.all(color: Colors.black, width: 2),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _resultBubble(int score, int total) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: panel,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.black, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          const Text(
+            'Quiz Completed!',
+            style: TextStyle(
+              fontFamily: 'HappyMonkey',
+              fontWeight: FontWeight.w700,
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Your final score is: $score / $total',
+            style: const TextStyle(
+              fontFamily: 'HappyMonkey',
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------- small helper: Positional arguments ----------
+  Widget _mintButton(String label, VoidCallback onTap) {
+    return Material(
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: const BorderSide(color: Colors.black, width: 2),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+          decoration: BoxDecoration(
+            color: mint,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ),

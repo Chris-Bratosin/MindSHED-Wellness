@@ -28,7 +28,7 @@ android {
 
     buildTypes {
         release {
-            signingConfig signingConfigs.debug   // TODO replace for real release
+            //signingConfig signingConfigs.debug   // TODO replace for real release
         }
     }
 }

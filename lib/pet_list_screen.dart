@@ -4,6 +4,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'pet_selection.dart';
 
+const cream = Color(0xFFFFF9DA);
+
 String _fmtDate(DateTime d) =>
     '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 
@@ -28,7 +30,7 @@ class SafeSvg extends StatelessWidget {
             child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
           );
         }
-        if (snap.hasError || !(snap.hasData ?? false) || snap.data!.trim().isEmpty) {
+        if (snap.data!.trim().isEmpty || snap.hasError || !(snap.hasData)) {
           return const Icon(Icons.pets, size: 56);
         }
         return SvgPicture.string(
@@ -111,7 +113,9 @@ class PetListScreen extends StatelessWidget {
     final username = _resolveUsername();
 
     return Scaffold(
+      backgroundColor: cream,
       appBar: AppBar(
+        backgroundColor: cream,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -138,10 +142,10 @@ class PetListScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: theme.cardColor,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.black.withOpacity(0.10)),
+                border: Border.all(color: Colors.black12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black12,
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   )
@@ -230,7 +234,7 @@ class _PetSheet extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.black.withOpacity(0.12)),
+                  border: Border.all(color: Colors.black12),
                 ),
                 child: Text(
                   'Friends with $username since: $sinceLabel',
@@ -264,7 +268,7 @@ class _PetSheet extends StatelessWidget {
                   },
                   style: ButtonStyle(
                     backgroundColor:
-                    MaterialStateProperty.all(const Color(0xFFB6FFB1)), // mint
+                    MaterialStateProperty.all(const Color(0xFFFFF9DA)), // mint
                     side: MaterialStateProperty.all(
                       const BorderSide(color: Colors.black, width: 2),
                     ),

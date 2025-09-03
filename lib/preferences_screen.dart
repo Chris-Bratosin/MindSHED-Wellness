@@ -3,6 +3,8 @@ import 'package:hive/hive.dart';
 
 import 'main.dart'; // to access themeNotifier
 
+const cream = Color(0xFFFFF9DA);
+
 class PreferencesScreen extends StatefulWidget {
   const PreferencesScreen({super.key});
 
@@ -29,7 +31,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         Theme.of(context).textTheme.bodyMedium?.fontSize ?? 18;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: cream,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -133,7 +135,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: const Color(0xFFB6FFB1), // Light green
+            activeThumbColor: const Color(0xFFB6FFB1), // Light green
             inactiveThumbColor: Colors.grey.shade600,
             inactiveTrackColor: Colors.grey.shade300,
           ),

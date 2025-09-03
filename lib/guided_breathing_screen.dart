@@ -1,119 +1,103 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/material.dart';
+
+// add this import so we can navigate explicitly to Activities
+import 'activities_screen.dart';
 
 class GuidedBreathingScreen extends StatefulWidget {
   const GuidedBreathingScreen({super.key});
 
   @override
-  _GuidedBreathingScreenState createState() => _GuidedBreathingScreenState();
+  State<GuidedBreathingScreen> createState() => _GuidedBreathingScreenState();
 }
 
-class _GuidedBreathingScreenState extends State<GuidedBreathingScreen> {
-  int seconds = 0;
-  int meditationDuration = 60;
-  Timer? _timer;
-  final AudioPlayer _audioPlayer = AudioPlayer();
+class _GuidedBreathingScreenState extends State<GuidedBreathingScreen>
+    with SingleTickerProviderStateMixin {
+  // ---------- palette ----------
+  static const cream = Color(0xFFFFF9DA);
+  static const mint = Color(0xFFB6FFB1);
+  static const panel = Color(0xFFE6F3FF);
+  static const textBlack = Colors.black;
+
+  // ---------- state ----------
+  int meditationDuration = 60; // seconds
+  int secondsLeft = 60;
+
   String? _selectedSound;
-  bool _isPlaying = false;
-  bool _isInhaling = true;
-  int _breathingPhase = 0; // 0: inhale, 1: hold, 2: exhale, 3: hold
-  int _phaseTimer = 0;
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
-  // Proven Box Breathing pattern (4-4-4-4) - used by Navy SEALs and clinically proven
-  // Inhale 4s, Hold 4s, Exhale 4s, Hold 4s - creates a smooth, balanced rhythm
-  final int _inhaleTime = 4;
-  final int _holdAfterInhale = 4;
-  final int _exhaleTime = 4;
-  final int _holdAfterExhale = 4;
+  Timer? _timer;
+  bool _sessionActive = false; // controls overlay + dimming
 
-  void _startTimer() {
-    if (_selectedSound == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select an ambient sound first!")),
-      );
-      return;
-    }
+  // 4-4-4-4 box breathing
+  final int _inhale = 4;
+  final int _hold1 = 4;
+  final int _exhale = 4;
+  final int _hold2 = 4;
+  int _phase = 0; // 0: inhale, 1: hold, 2: exhale, 3: hold
+  int _phaseTick = 0;
+
+  // simple scale pulse for the circle
+  late final AnimationController _pulse;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    secondsLeft = meditationDuration;
+
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+
+    _scale = Tween<double>(begin: 0.98, end: 1.02).animate(
+      CurvedAnimation(parent: _pulse, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
     _timer?.cancel();
-    _isPlaying = true;
-    seconds = meditationDuration;
-    _breathingPhase = 0;
-    _isInhaling = true;
-    _phaseTimer = 0;
-    _playAudio();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (seconds > 0) {
-        setState(() {
-          seconds--;
-          _phaseTimer++;
-
-          // Update breathing phase based on Box Breathing timing
-          if (_breathingPhase == 0 && _phaseTimer >= _inhaleTime) {
-            _breathingPhase = 1; // Hold after inhale
-            _phaseTimer = 0;
-            _isInhaling = false;
-          } else if (_breathingPhase == 1 && _phaseTimer >= _holdAfterInhale) {
-            _breathingPhase = 2; // Exhale
-            _phaseTimer = 0;
-            _isInhaling = false;
-          } else if (_breathingPhase == 2 && _phaseTimer >= _exhaleTime) {
-            _breathingPhase = 3; // Hold after exhale
-            _phaseTimer = 0;
-            _isInhaling = false;
-          } else if (_breathingPhase == 3 && _phaseTimer >= _holdAfterExhale) {
-            _breathingPhase = 0; // Back to inhale
-            _phaseTimer = 0;
-            _isInhaling = true;
-          }
-        });
-      } else {
-        _pauseTimer();
-      }
-    });
-    setState(() {});
+    _audioPlayer.dispose();
+    _pulse.dispose();
+    super.dispose();
   }
 
-  void _pauseTimer() {
-    if (_isPlaying) {
-      setState(() => _isPlaying = false);
-      _timer?.cancel();
-      _audioPlayer.pause();
+  // ---------- navigation/back handling ----------
+  void _goBack() {
+    // stop overlay + audio if running
+    if (_sessionActive) _stop();
+
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    } else {
+      // if there is no previous route, go to Activities
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const ActivitiesScreen()),
+      );
     }
   }
 
-  void _adjustMeditationTime(int adjustment) {
+  // ---------- logic ----------
+  void _adjustTime(int delta) {
     setState(() {
-      meditationDuration = (meditationDuration + adjustment).clamp(10, 3600);
-      seconds = meditationDuration;
+      meditationDuration = (meditationDuration + delta).clamp(10, 3600);
+      secondsLeft = meditationDuration;
     });
   }
 
-  Future<void> _playAudio() async {
-    if (_selectedSound == null) return;
-    String audioPath = _getAudioPath(_selectedSound!);
-    if (audioPath.isEmpty) return;
-    try {
-      await _audioPlayer.stop();
-      await _audioPlayer.setSource(AssetSource(audioPath));
-      await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-      await _audioPlayer.play(AssetSource(audioPath));
-    } catch (e) {
-      print("Error loading audio: $audioPath - $e");
-    }
+  String _fmt(int s) =>
+      '${(s ~/ 60).toString().padLeft(2, '0')}:${(s % 60).toString().padLeft(2, '0')}';
+
+  void _selectSound(String s) async {
+    if (_selectedSound == s) return;
+    setState(() => _selectedSound = s);
+    if (_sessionActive) await _playAudio(); // if running, switch immediately
   }
 
-  void _changeSound(String sound) async {
-    if (_selectedSound != sound) {
-      setState(() {
-        _selectedSound = sound;
-      });
-      if (_isPlaying) {
-        await _playAudio();
-      }
-    }
-  }
-
-  String _getAudioPath(String sound) {
+  String _assetFor(String sound) {
     switch (sound) {
       case 'Light Rain':
         return 'ambient/lr.mp3';
@@ -130,260 +114,424 @@ class _GuidedBreathingScreenState extends State<GuidedBreathingScreen> {
     }
   }
 
-  String _formatTime(int seconds) {
-    int minutes = seconds ~/ 60;
-    int secs = seconds % 60;
-    return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  Future<void> _playAudio() async {
+    if (_selectedSound == null) return;
+    final path = _assetFor(_selectedSound!);
+    if (path.isEmpty) return;
+    await _audioPlayer.stop();
+    await _audioPlayer.setSource(AssetSource(path));
+    await _audioPlayer.setReleaseMode(ReleaseMode.loop);
+    await _audioPlayer.play(AssetSource(path));
   }
 
-  String _getBreathingInstruction() {
-    switch (_breathingPhase) {
-      case 0:
-        return "Inhale";
-      case 1:
-        return "Hold";
-      case 2:
-        return "Exhale";
-      case 3:
-        return "Hold";
-      default:
-        return "Inhale";
+  void _start() {
+    if (_selectedSound == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Select an ambient sound first')),
+      );
+      return;
     }
-  }
-
-  Color _getCircleColor() {
-    switch (_breathingPhase) {
-      case 0:
-        return const Color(0xFF87CEEB); // Light blue for inhale
-      case 1:
-        return const Color(0xFF98FB98); // Light green for hold
-      case 2:
-        return const Color(0xFFDDA0DD); // Light purple for exhale
-      case 3:
-        return const Color(0xFFFFB6C1); // Light pink for hold
-      default:
-        return const Color(0xFF87CEEB);
-    }
-  }
-
-  @override
-  void dispose() {
+    setState(() {
+      _sessionActive = true;
+      secondsLeft = meditationDuration;
+      _phase = 0;
+      _phaseTick = 0;
+    });
+    _playAudio();
     _timer?.cancel();
-    _audioPlayer.dispose();
-    super.dispose();
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (secondsLeft <= 0) {
+        _stop();
+        return;
+      }
+      setState(() {
+        secondsLeft--;
+        _phaseTick++;
+
+        // 4-4-4-4 cycle
+        if (_phase == 0 && _phaseTick >= _inhale) {
+          _phase = 1;
+          _phaseTick = 0;
+        } else if (_phase == 1 && _phaseTick >= _hold1) {
+          _phase = 2;
+          _phaseTick = 0;
+        } else if (_phase == 2 && _phaseTick >= _exhale) {
+          _phase = 3;
+          _phaseTick = 0;
+        } else if (_phase == 3 && _phaseTick >= _hold2) {
+          _phase = 0;
+          _phaseTick = 0;
+        }
+      });
+    });
   }
 
+  void _stop() {
+    _timer?.cancel();
+    _audioPlayer.pause();
+    setState(() {
+      _sessionActive = false;
+    });
+  }
+
+  String get _phaseLabel {
+    switch (_phase) {
+      case 0:
+        return 'Inhale...';
+      case 1:
+        return 'Hold...';
+      case 2:
+        return 'Exhale...';
+      case 3:
+        return 'Hold...';
+      default:
+        return 'Inhale...';
+    }
+  }
+
+  Color get _ringColor {
+    switch (_phase) {
+      case 0:
+        return const Color(0xFF48A9F8); // inhale blue
+      case 1:
+        return const Color(0xFF60D394); // hold green
+      case 2:
+        return const Color(0xFF9B5DE5); // exhale purple
+      case 3:
+        return const Color(0xFFFFB6C1); // hold pink
+      default:
+        return const Color(0xFF48A9F8);
+    }
+  }
+
+  // ---------- UI ----------
   @override
   Widget build(BuildContext context) {
-    final fontSize = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 18.0;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    double containerWidth = MediaQuery.of(context).size.width * 0.85;
+    final baseText = Theme.of(context).textTheme.bodyMedium;
 
-    return SingleChildScrollView(
+    return WillPopScope(
+      onWillPop: () async {
+        _goBack();
+        return false; // we handled back
+      },
+      child: Scaffold(
+        backgroundColor: cream,
+        body: SafeArea(
+          child: Stack(
+            children: [
+              // base content
+              AnimatedOpacity(
+                duration: const Duration(milliseconds: 300),
+                opacity: _sessionActive ? 0.25 : 1,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  children: [
+                    _pillHeader('Guided Breathing'),
+                    const SizedBox(height: 10),
+                    Center(
+                      child: Text(
+                        'This is your moment to relax\nand recharge',
+                        textAlign: TextAlign.center,
+                        style: baseText?.copyWith(
+                          fontFamily: 'HappyMonkey',
+                          color: textBlack,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    _timerCard(),
+                    const SizedBox(height: 14),
+                    _soundPanel(baseText),
+                    const SizedBox(height: 16),
+
+                    Center(child: _mintButton('Start', _start)),
+                    const SizedBox(height: 16),
+                    Center(child: _mintButton('Back', _goBack)),
+                  ],
+                ),
+              ),
+
+              // overlay (session)
+              if (_sessionActive) _breathingOverlay(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _pillHeader(String title) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.black, width: 2),
+          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6, offset: const Offset(0, 3))],
+        ),
+        child: Text(
+          title,
+          style: const TextStyle(fontFamily: 'HappyMonkey', fontSize: 22, color: Colors.black),
+        ),
+      ),
+    );
+  }
+
+  Widget _timerCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.black, width: 2),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6, offset: const Offset(0, 3))],
+      ),
       child: Column(
         children: [
-          const SizedBox(height: 20),
-          Text(
-            "This is your moment to relax\nand recharge",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'HappyMonkey',
-              color: Theme.of(context).textTheme.bodyMedium?.color,
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF1EEDB),
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+              border: Border(bottom: BorderSide(color: Colors.black, width: 2)),
+            ),
+            child: Center(
+              child: Text(
+                _fmt(secondsLeft),
+                style: const TextStyle(
+                  fontFamily: 'HappyMonkey',
+                  fontSize: 36,
+                  color: Colors.black,
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 15),
+        ],
+      ),
+    );
+  }
 
-          // Play/Pause button
+  Widget _soundPanel(TextStyle? baseText) {
+    final sounds = const [
+      'Light Rain',
+      'Heavy Rain',
+      'Warm Fireplace',
+      'White Noise',
+      'Ocean Waves',
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: panel,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.black, width: 2),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6, offset: const Offset(0, 3))],
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      child: Column(
+        children: [
+          const Text(
+            'Select Ambient Music',
+            style: TextStyle(fontFamily: 'HappyMonkey', fontSize: 16, color: Colors.black),
+          ),
+          const SizedBox(height: 10),
+          ...sounds.map((s) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: _chipButton(
+              label: s,
+              selected: _selectedSound == s,
+              onTap: () => _selectSound(s),
+            ),
+          )),
+          const SizedBox(height: 10),
+
+          // Seconds adjuster & selected sound label
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              IconButton(
-                icon: Icon(
-                  _isPlaying ? Icons.pause_circle : Icons.play_circle,
-                  size: 50,
-                  color: Theme.of(context).iconTheme.color,
-                ),
-                onPressed: _isPlaying ? _pauseTimer : _startTimer,
+              _iconBadge(Icons.remove, onTap: () => _adjustTime(-10)),
+              const SizedBox(width: 12),
+              Text(
+                _fmt(meditationDuration),
+                style: const TextStyle(fontFamily: 'HappyMonkey', fontSize: 22, color: Colors.black),
               ),
+              const SizedBox(width: 12),
+              _iconBadge(Icons.add, onTap: () => _adjustTime(10)),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
+          if (_selectedSound != null) _chipLabel(label: _selectedSound!),
+        ],
+      ),
+    );
+  }
 
-          // Timer display
-          Container(
-            width: containerWidth,
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.amber,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.black, width: 2),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+  // ---------- overlay ----------
+  Widget _breathingOverlay() {
+    return Positioned.fill(
+      child: IgnorePointer(
+        ignoring: false,
+        child: Container(
+          color: Colors.black38,
+          child: Center(
+            child: Stack(
+              alignment: Alignment.center,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.remove_circle, color: Colors.black),
-                  onPressed: () => _adjustMeditationTime(-10),
-                ),
-                Text(
-                  _formatTime(seconds),
-                  style: TextStyle(
-                    fontSize: fontSize + 10,
-                    fontFamily: 'Digital',
-                    color: Colors.black,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.add_circle, color: Colors.black),
-                  onPressed: () => _adjustMeditationTime(10),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Main content area - either music selection or breathing circle
-          if (!_isPlaying || _selectedSound == null) ...[
-            // Ambient music selection
-            Container(
-              width: containerWidth,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.blue.shade300 : Colors.blue.shade300,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.black, width: 2),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    "Select Ambient Music",
-                    style: TextStyle(
-                      fontSize: fontSize,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'HappyMonkey',
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  ...[
-                    "Light Rain",
-                    "Heavy Rain",
-                    "Warm Fireplace",
-                    "White Noise",
-                    "Ocean Waves"
-                  ]
-                      .map(
-                        (e) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 5),
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: isDark
-                                    ? (_selectedSound == e
-                                        ? Colors.blueGrey
-                                        : const Color(0xFF1E1E1E))
-                                    : (_selectedSound == e
-                                        ? Colors.blueGrey
-                                        : Colors.grey[300]),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  side: const BorderSide(
-                                      color: Colors.black, width: 2),
-                                ),
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 12),
-                              ),
-                              onPressed: () => _changeSound(e),
-                              child: Text(
-                                e,
-                                style: TextStyle(
-                                  fontSize: fontSize,
-                                  fontFamily: 'HappyMonkey',
-                                  color: isDark ? Colors.white : Colors.black,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
-                      ,
-                ],
-              ),
-            ),
-          ] else ...[
-            // Breathing circle when session is active
-            Container(
-              width: containerWidth,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.blue.shade300 : Colors.blue.shade300,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.black, width: 2),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    "Current Sound: $_selectedSound",
-                    style: TextStyle(
-                      fontSize: fontSize,
-                      fontFamily: 'HappyMonkey',
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Breathing circle
-                  Container(
-                    width: 200,
-                    height: 200,
+                ScaleTransition(
+                  scale: _scale,
+                  child: Container(
+                    width: 250,
+                    height: 250,
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
                       color: Colors.white,
-                      border: Border.all(
-                        color: _getCircleColor(),
-                        width: 8,
-                      ),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: _ringColor, width: 10),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black26,
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    child: Center(
-                      child: Text(
-                        _getBreathingInstruction(),
-                        style: TextStyle(
-                          fontSize: fontSize + 8,
-                          fontFamily: 'HappyMonkey',
-                          color: Colors.black87,
-                          fontWeight: FontWeight.w500,
-                        ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      _phaseLabel,
+                      style: const TextStyle(
+                        fontFamily: 'HappyMonkey',
+                        fontSize: 22,
+                        color: Colors.black87,
                       ),
                     ),
                   ),
+                ),
 
-                  const SizedBox(height: 20),
-
-                  Text(
-                    "Follow the breathing pattern",
-                    style: TextStyle(
-                      fontSize: fontSize - 2,
-                      fontFamily: 'HappyMonkey',
-                      color: Colors.white,
-                      fontStyle: FontStyle.italic,
+                // close
+                Positioned(
+                  right: 24,
+                  top: 24,
+                  child: Material(
+                    shape: const CircleBorder(side: BorderSide(color: Colors.black, width: 2)),
+                    color: Colors.white,
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: _stop,
+                      child: const SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: Icon(Icons.close, color: Colors.black),
+                      ),
                     ),
                   ),
-                ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ---------- small UI helpers ----------
+  Widget _mintButton(String label, VoidCallback onTap) {
+    return Material(
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: const BorderSide(color: Colors.black, width: 2),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+          decoration: BoxDecoration(
+            color: mint,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: const Offset(0, 2))],
+          ),
+          child: Text(label, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w600)),
+        ),
+      ),
+    );
+  }
+
+  Widget _chipButton({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: const BorderSide(color: Colors.black, width: 2),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+          decoration: BoxDecoration(
+            color: selected ? mint : Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 3, offset: const Offset(0, 2))],
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontFamily: 'HappyMonkey',
+                fontSize: 16,
+                color: Colors.black,
               ),
             ),
-          ],
-        ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _iconBadge(IconData icon, {required VoidCallback onTap}) {
+    return Material(
+      color: Colors.white,
+      shape: const CircleBorder(side: BorderSide(color: Colors.black, width: 2)),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: SizedBox(
+          width: 38,
+          height: 38,
+          child: Icon(icon, color: Colors.black),
+        ),
+      ),
+    );
+  }
+
+  Widget _chipLabel({required String label}) {
+    return Material(
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: const BorderSide(color: Colors.black, width: 2),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 3, offset: const Offset(0, 2))],
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'HappyMonkey',
+            fontSize: 16,
+            color: Colors.black,
+          ),
+        ),
       ),
     );
   }

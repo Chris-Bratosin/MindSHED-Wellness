@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
 import 'package:hive/hive.dart';
+
+import 'activities_screen.dart'; // for back fallback
 
 class SelfCareScreen extends StatefulWidget {
   const SelfCareScreen({super.key});
@@ -10,266 +11,375 @@ class SelfCareScreen extends StatefulWidget {
 }
 
 class _SelfCareScreenState extends State<SelfCareScreen> {
-  String selectedType = "Physical";
-  String? _userId;
+  // ----- palette -----
+  static const cream = Color(0xFFFFF9DA);
+  static const mint = Color(0xFFB6FFB1);
+  static const panelBlue = Color(0xFFE6F3FF);
 
-  Map<String, List<String>> selfCareTasks = {
+  // ----- data you already have -----
+  final Map<String, List<String>> selfCareTasks = {
     "Physical": [
       "Take a 5-minute stretch break",
       "Drink a full glass of water",
       "Take a 10-minute walk outside",
       "Do a quick bodyweight exercise",
-      "Try a new yoga pose to relax"
+      "Try a new yoga pose to relax",
     ],
     "Emotional": [
       "Write down three things you're grateful for",
       "Listen to your favorite song",
       "Call or text a loved one",
       "Practice deep breathing for 5 minutes",
-      "Write in a journal"
+      "Write in a journal",
     ],
     "Mental": [
       "Read 5 pages of a book",
       "Solve a small puzzle",
       "Practice mindfulness for 10 minutes",
       "Learn a new word and use it",
-      "Write down a personal goal"
+      "Write down a personal goal",
     ],
     "Social": [
       "Message a friend you haven't talked to in a while",
       "Join a community event",
       "Introduce yourself to someone new",
       "Have a meaningful conversation",
-      "Do a random act of kindness"
+      "Do a random act of kindness",
     ],
   };
 
-  Map<String, List<String>> generatedTasks = {};
-  Map<String, Map<String, bool>> taskCompletionStatus = {};
-  Map<String, DateTime?> taskTimers = {};
-  Map<String, bool> tasksCompleted = {};
-  Map<String, String> lastUpdatedDates = {};
+  // ----- state -----
+  String selectedType = "Physical";
+  String? _userId;
+
+  /// simple completion map: { type: { taskText: bool } }
+  final Map<String, Map<String, bool>> _completed = {
+    "Physical": {},
+    "Emotional": {},
+    "Mental": {},
+    "Social": {},
+  };
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _init();
   }
 
-  Future<void> _loadUserData() async {
-    final sessionBox = await Hive.openBox('session');
-    final userId = sessionBox.get('loggedInUser');
-    if (userId == null) return;
-
-    setState(() {
-      _userId = userId;
-    });
-
-    final box = await Hive.openBox('selfCareTasks');
-    final data = box.get(userId);
-    if (data != null) {
-      final decoded = jsonDecode(data);
-      setState(() {
-        generatedTasks = Map<String, List<String>>.from(
-          (decoded['generatedTasks'] ?? {}).map((key, val) => MapEntry(key, List<String>.from(val)))
-        );
-        taskCompletionStatus = Map<String, Map<String, bool>>.from(
-          (decoded['taskCompletionStatus'] ?? {}).map((key, val) => MapEntry(key, Map<String, bool>.from(val)))
-        );
-        taskTimers = Map<String, DateTime?>.from(
-          (decoded['taskTimers'] ?? {}).map((key, val) => MapEntry(key, val != null ? DateTime.parse(val) : null))
-        );
-        tasksCompleted = Map<String, bool>.from(decoded['tasksCompleted'] ?? {});
-        lastUpdatedDates = Map<String, String>.from(decoded['lastUpdatedDates'] ?? {});
-      });
+  Future<void> _init() async {
+    // load user id if available – optional
+    final session = await Hive.openBox('session');
+    _userId = session.get('loggedInUser');
+    // ensure completion map contains all current tasks (defaults to false)
+    for (final entry in selfCareTasks.entries) {
+      _completed.putIfAbsent(entry.key, () => {});
+      for (final task in entry.value) {
+        _completed[entry.key]!.putIfAbsent(task, () => false);
+      }
     }
-
-    _checkCompletionStatus();
+    // try load saved state (optional; if you don’t want persistence, remove this block)
+    if (_userId != null) {
+      final box = await Hive.openBox('selfCareSimple');
+      final raw = box.get('sc_$_userId');
+      if (raw is Map) {
+        for (final type in _completed.keys) {
+          final m = raw[type];
+          if (m is Map) {
+            _completed[type]!.addAll(m.map((k, v) => MapEntry(k.toString(), v == true)));
+          }
+        }
+      }
+    }
+    setState(() {});
   }
 
-  Future<void> _saveUserData() async {
+  Future<void> _save() async {
     if (_userId == null) return;
-    final box = await Hive.openBox('selfCareTasks');
-    final data = jsonEncode({
-      'generatedTasks': generatedTasks,
-      'taskCompletionStatus': taskCompletionStatus,
-      'taskTimers': taskTimers.map((key, value) => MapEntry(key, value?.toIso8601String())),
-      'tasksCompleted': tasksCompleted,
-      'lastUpdatedDates': lastUpdatedDates,
-    });
-    await box.put(_userId, data);
+    final box = await Hive.openBox('selfCareSimple');
+    await box.put('sc_$_userId', _completed);
   }
 
-  void _checkCompletionStatus() {
-    final today = DateTime.now().toIso8601String().split("T").first;
-
-    if (lastUpdatedDates[selectedType] != today) {
-      generatedTasks[selectedType] = List<String>.from(selfCareTasks[selectedType]!);
-      generatedTasks[selectedType]!.shuffle();
-      generatedTasks[selectedType] = generatedTasks[selectedType]!.take(3).toList();
-      taskCompletionStatus[selectedType] = {
-        for (var task in generatedTasks[selectedType]!) task: false,
-      };
-      taskTimers[selectedType] = DateTime.now().add(const Duration(hours: 24));
-      lastUpdatedDates[selectedType] = today;
-    }
-
-    bool allCompleted = taskCompletionStatus[selectedType]!.values.every((c) => c);
-    bool expired = DateTime.now().isAfter(taskTimers[selectedType]!);
-
-    tasksCompleted[selectedType] = allCompleted || expired;
-    _saveUserData();
-  }
-
-  Widget _buildToggleButton(String text) {
-    bool isSelected = selectedType == text;
-    return Expanded(
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isSelected
-              ? (Theme.of(context).brightness == Brightness.dark
-                ? const Color(0xFF40D404)
-                : Colors.lightGreen)
-            : (Theme.of(context).brightness == Brightness.dark
-              ? const Color(0xFF1E1E1E)
-              : Colors.grey[400]),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: Colors.black, width: 2),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          elevation: 3,
+  // ----- UI helpers -----
+  Widget _pillHeader(String title) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.black, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
-        onPressed: () {
-          setState(() {
-            selectedType = text;
-            _checkCompletionStatus();
-          });
-        },
         child: Text(
-          text,
-          style: TextStyle(
-            fontSize: Theme.of(context).textTheme.bodyMedium?.fontSize,
-            fontWeight: FontWeight.bold,
-            color: isSelected
-              ? Colors.black
-              : Theme.of(context).brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black,
+          title,
+          style: const TextStyle(
+            fontFamily: 'HappyMonkey',
+            fontSize: 22,
+            color: Colors.black,
           ),
         ),
       ),
     );
   }
 
-  List<Widget> _buildTaskList() {
-    return generatedTasks[selectedType]?.map((task) => Theme(
-      data: Theme.of(context).copyWith(unselectedWidgetColor: Colors.black),
-      child: CheckboxListTile(
-        value: taskCompletionStatus[selectedType]?[task] ?? false,
-        onChanged: (value) {
-          setState(() {
-            taskCompletionStatus[selectedType]![task] = value ?? false;
-          });
-          _saveUserData();
-          _checkCompletionStatus();
-        },
-        title: Text(
-          task,
-          style: TextStyle(
-            fontSize: Theme.of(context).textTheme.bodyMedium?.fontSize,
-            color: Theme.of(context).textTheme.bodyMedium?.color,
-          ),
+  Widget _selectorCard() {
+    Widget chip(String label) {
+      final sel = selectedType == label;
+      return Material(
+        color: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: Colors.black, width: 2),
         ),
-        controlAffinity: ListTileControlAffinity.leading,
-        activeColor: Colors.transparent,
-        checkColor: Colors.black,
-      ),
-    )).toList() ?? [];
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    double containerWidth = MediaQuery.of(context).size.width * 0.9;
-    _checkCompletionStatus();
-
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const SizedBox(height: 20),
-          Center(
-            child: Container(
-              width: containerWidth,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.blue.shade300
-                  : Colors.blue.shade300,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.black, width: 2),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    "Select self-care type",
-                    style: TextStyle(
-                      fontSize: Theme.of(context).textTheme.bodyMedium?.fontSize,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildToggleButton("Physical"),
-                      const SizedBox(width: 10),
-                      _buildToggleButton("Emotional"),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildToggleButton("Mental"),
-                      const SizedBox(width: 10),
-                      _buildToggleButton("Social"),
-                    ],
-                  ),
-                ],
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: () => setState(() => selectedType = label),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+            decoration: BoxDecoration(
+              color: sel ? mint : Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 3,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontFamily: 'HappyMonkey',
+                fontSize: 16,
+                color: Colors.black,
               ),
             ),
           ),
-          const SizedBox(height: 20),
-          Center(
-            child: Container(
-              width: containerWidth,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade300,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.black, width: 2),
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.black, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+      child: Column(
+        children: [
+          const Text(
+            'Select self-care type',
+            style: TextStyle(
+              fontFamily: 'HappyMonkey',
+              fontSize: 16,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 16,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
+            children: [
+              chip('Physical'),
+              chip('Emotional'),
+              chip('Mental'),
+              chip('Social'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tasksPanel() {
+    final tasks = selfCareTasks[selectedType] ?? const <String>[];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: panelBlue,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.black, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
+      child: Column(
+        children: [
+          // task list
+          ...tasks.map((t) {
+            final checked = _completed[selectedType]?[t] ?? false;
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // checkbox look (custom to match mock)
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        _completed[selectedType]![t] = !checked;
+                      });
+                      _save();
+                    },
+                    child: Container(
+                      width: 22,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: checked ? Colors.black : Colors.transparent,
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(color: Colors.black, width: 2),
+                      ),
+                      child: checked
+                          ? const Icon(Icons.check, size: 16, color: Colors.white)
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      t,
+                      style: const TextStyle(
+                        fontFamily: 'HappyMonkey',
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              child: Column(
-                children: tasksCompleted[selectedType] == true
-                    ? [
-                        Text(
-                          "Tasks complete! 🎉",
-                          style: TextStyle(
-                            fontSize: Theme.of(context).textTheme.bodyMedium?.fontSize,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        )
-                      ]
-                    : _buildTaskList(),
+            );
+          }),
+
+          const SizedBox(height: 18),
+
+          // Generate button (visual only for now)
+          Center(
+            child: Material(
+              color: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+                side: const BorderSide(color: Colors.black, width: 2),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(18),
+                onTap: () {},
+                child: Container(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: mint,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      )
+                    ],
+                  ),
+                  child: const Text(
+                    'Generate random tasks',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'HappyMonkey',
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _goBack() {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const ActivitiesScreen()),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: cream,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          children: [
+            _pillHeader('Self Care'),
+            const SizedBox(height: 16),
+            _selectorCard(),
+            const SizedBox(height: 12),
+            _tasksPanel(),
+            const SizedBox(height: 18),
+
+            // Back button
+            Center(
+              child: Material(
+                color: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  side: const BorderSide(color: Colors.black, width: 2),
+                ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(18),
+                  onTap: _goBack,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: mint,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.12),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        )
+                      ],
+                    ),
+                    child: const Text(
+                      'Back',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'HappyMonkey',
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

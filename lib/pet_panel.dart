@@ -29,7 +29,7 @@ class SafeSvg extends StatelessWidget {
             child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
           );
         }
-        if (snap.hasError || !(snap.hasData ?? false) || snap.data!.trim().isEmpty) {
+        if (snap.hasError || !(snap.hasData) || snap.data!.trim().isEmpty) {
           return const Icon(Icons.pets, size: 56);
         }
         return SvgPicture.string(
@@ -148,7 +148,7 @@ class _PetPanelState extends State<PetPanel> {
     const mint = Color(0xFFB6FFB1); // soft green you’re using
     const border2 = BorderSide(color: Colors.black, width: 2);
     final radiusCard = BorderRadius.circular(22);
-    final radiusPill = BorderRadius.circular(16);
+    final radiusPill = BorderRadius.circular(12);
 
     Widget pill(String text, {VoidCallback? onTap}) {
       final child = Container(
@@ -180,7 +180,7 @@ class _PetPanelState extends State<PetPanel> {
             border: const Border.fromBorderSide(border2),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.10),
+                color: Colors.black12,
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               )

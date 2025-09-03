@@ -1,3 +1,0 @@
-D:/git/MindSHED-Wellness/build/windows/x64/_deps/nuget-subbuild/CMakeFiles/nuget-populate.dir
-D:/git/MindSHED-Wellness/build/windows/x64/_deps/nuget-subbuild/CMakeFiles/ALL_BUILD.dir
-D:/git/MindSHED-Wellness/build/windows/x64/_deps/nuget-subbuild/CMakeFiles/ZERO_CHECK.dir

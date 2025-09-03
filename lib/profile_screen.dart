@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+
 import 'package:mindshed_app/badges_screen.dart';
 import 'package:mindshed_app/goals_screen.dart';
 import 'package:mindshed_app/home_screen.dart';
@@ -9,6 +10,7 @@ import 'package:mindshed_app/settings_screen.dart';
 import 'package:mindshed_app/activities_screen.dart';
 import 'package:mindshed_app/transition_helper.dart';
 import 'package:mindshed_app/edit_details_screen.dart';
+
 import 'pet_panel.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -18,6 +20,10 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  // palette
+  static const cream = Color(0xFFFFF9DA);
+  static const mint  = Color(0xFFB6FFB1);
+
   int _selectedIndex = 4;
   String _username = '';
   String? _petName;
@@ -44,367 +50,326 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (userId == null) return;
 
     final streakKey = '${userId}_currentStreak';
-    final loginKey = '${userId}_lastLoginDate';
-    final xpKey = '${userId}_totalXp';
+    final loginKey  = '${userId}_lastLoginDate';
+    final xpKey     = '${userId}_totalXp';
 
     final lastLoginMillis = sessionBox.get(loginKey) as int?;
-    final storedStreak = sessionBox.get(streakKey) as int? ?? 0;
-    final now = DateTime.now();
+    final storedStreak    = sessionBox.get(streakKey) as int? ?? 0;
+    final now   = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    // Fix: Initialize lastDate properly and use proper comparison
     DateTime? lastDate;
     if (lastLoginMillis != null) {
       final dt = DateTime.fromMillisecondsSinceEpoch(lastLoginMillis);
       lastDate = DateTime(dt.year, dt.month, dt.day);
     }
 
-    // Logic to determine the new streak value
     int newStreak;
-
     if (lastDate == null) {
-      // First login ever
       newStreak = 1;
     } else if (lastDate.isAtSameMomentAs(today)) {
-      // Already logged in today, keep current streak
       newStreak = storedStreak;
     } else if (today.difference(lastDate).inDays == 1) {
-      // Logged in yesterday, increment streak
       newStreak = storedStreak + 1;
     } else if (today.difference(lastDate).inDays > 1) {
-      // Missed at least one day, reset streak
       newStreak = 1;
     } else {
-      // This case should not happen (future date), but keep current streak
       newStreak = storedStreak;
     }
 
-    // Reward XP for milestone streaks
-    final xpGain = <int, int>{
-      3: 5,
-      7: 10,
-      14: 20,
-      30: 50,
-      60: 100,
-      90: 150,
-      180: 300,
-      365: 1000
-    };
+    const xpGain = <int, int>{3:5, 7:10, 14:20, 30:50, 60:100, 90:150, 180:300, 365:1000};
     if (xpGain.containsKey(newStreak) && newStreak != storedStreak) {
       final currentXp = sessionBox.get(xpKey) as int? ?? 0;
       await sessionBox.put(xpKey, currentXp + xpGain[newStreak]!);
     }
 
-    // Always update the last login date to today and save the new streak
     await sessionBox.put(loginKey, today.millisecondsSinceEpoch);
     await sessionBox.put(streakKey, newStreak);
-
-    if (mounted) {
-      setState(() {
-        _streak = newStreak;
-      });
-    }
+    if (mounted) setState(() => _streak = newStreak);
   }
 
   Future<void> _loadUserInfo() async {
     final sessionBox = Hive.box('session');
     final metricsBox = Hive.box('dailyMetrics');
-    final petBox = Hive.box('petNames');
-    final userId = sessionBox.get('loggedInUser') as String?;
-    if (userId != null) {
-      final storedPetName = petBox.get(userId) as String?;
-      final engine = InsightsEngine(metricsBox);
-      final score = await engine.getPredictedScore(userId, DateRange.daily);
-      String mood = 'Normal';
-      if (score >= 80) {
-        mood = 'Excited';
-      } else if (score >= 60)
-        mood = 'Happy';
-      else if (score >= 40)
-        mood = 'Okay';
-      else if (score >= 20)
-        mood = 'Tired';
-      else if (score > 0) mood = 'Sad';
+    final petBox     = Hive.box('petNames');
 
-      if (mounted) {
-        setState(() {
-          _username = userId;
-          _petName = storedPetName;
-          _petMood = score == 0 ? 'Normal' : mood;
-        });
-      }
+    final userId = sessionBox.get('loggedInUser') as String?;
+    if (userId == null) return;
+
+    final storedPetName = petBox.get(userId) as String?;
+    final engine = InsightsEngine(metricsBox);
+    final score  = await engine.getPredictedScore(userId, DateRange.daily);
+
+    String mood = 'Normal';
+    if (score >= 80)      mood = 'Excited';
+    else if (score >= 60) mood = 'Happy';
+    else if (score >= 40) mood = 'Okay';
+    else if (score >= 20) mood = 'Tired';
+    else if (score > 0)   mood = 'Sad';
+
+    if (mounted) {
+      setState(() {
+        _username = userId;
+        _petName  = storedPetName;
+        _petMood  = score == 0 ? 'Normal' : mood;
+      });
     }
   }
 
-  Future<void> _renamePet() async {
-    final controller = TextEditingController(text: _petName);
-    final newName = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Rename Your Pet'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(hintText: 'Enter pet name'),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-              child: const Text('Save')),
+  // ---- small UI helpers ----
+  Widget _pillHeader(String title) => Center(
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.black, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          )
         ],
       ),
-    );
-    if (newName != null && newName.isNotEmpty && newName != _petName) {
-      final sessionBox = Hive.box('session');
-      final petBox = Hive.box('petNames');
-      final userId = sessionBox.get('loggedInUser') as String?;
-      if (userId != null) {
-        await petBox.put(userId, newName);
+      child: Text(title,
+          style: const TextStyle(
+              fontFamily: 'HappyMonkey', fontSize: 22, color: Colors.black)),
+    ),
+  );
 
-        final xpKey = '${userId}_totalXp';
-        final currentXp = sessionBox.get(xpKey) as int? ?? 0;
-        await sessionBox.put(xpKey, currentXp + 10);
+  Widget _card(Widget child) => Container(
+    margin: const EdgeInsets.symmetric(horizontal: 12),
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: Colors.black, width: 2),
+      boxShadow: [
+        BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+            offset: const Offset(0, 3))
+      ],
+    ),
+    child: child,
+  );
 
-        setState(() {
-          _petName = newName;
-        });
-      }
-    }
-  }
+  Widget _labelChip(String text) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+    decoration: BoxDecoration(
+      color: const Color(0xFFF1F1F1),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: Colors.black, width: 1.6),
+    ),
+    child: Text(text,
+        textAlign: TextAlign.center,
+        style:
+        const TextStyle(fontFamily: 'HappyMonkey', color: Colors.black)),
+  );
 
-  Widget _buildLabelButton(
-    String label, {
-    Color? bgColor,
-    Color? textColor,
-    double? fontSize,
-    VoidCallback? onTap,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return GestureDetector(
+  Widget _mintBtn(String label, VoidCallback onTap, {IconData? icon}) => Material(
+    color: Colors.transparent,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(22),
+      side: const BorderSide(color: Colors.black, width: 2),
+    ),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(22),
       onTap: onTap,
       child: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.symmetric(vertical: 5),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
-          color:
-              bgColor ?? (isDark ? const Color(0xFF2C2F36) : Colors.grey[200]),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: Colors.black, width: 1.5),
+          color: mint,
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: const Offset(0, 2))
+          ],
         ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontFamily: 'HappyMonkey',
-            fontSize: fontSize,
-            color: textColor ?? (isDark ? Colors.white : Colors.black),
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, color: Colors.black),
+              const SizedBox(width: 8),
+            ],
+            Text(label,
+                style: const TextStyle(
+                    fontFamily: 'HappyMonkey',
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600)),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
-    final textColor = Theme.of(context).textTheme.bodyMedium?.color;
-    final fontSize = Theme.of(context).textTheme.bodyMedium?.fontSize;
+    final fs = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 16.0;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: cream,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Container(
-                margin: const EdgeInsets.all(12),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  border: Border.all(color: Colors.black, width: 2),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black, width: 2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.person,
-                          size: 60, color: Colors.black),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _buildLabelButton(_username, fontSize: fontSize),
-                          _buildLabelButton('Current Streak: $_streak',
-                              fontSize: fontSize),
-                          _buildLabelButton(
-                            'Edit Details',
-                            bgColor:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? const Color(0xFF40D404)
-                                    : const Color(0xFFB6FFB1),
-                            fontSize: fontSize,
-                            onTap: () {
-                              Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (c) =>
-                                              const EditDetailsScreen()))
-                                  .then((_) => _loadUserInfo());
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 20),
+          children: [
+            _pillHeader('My Profile'),
+            const SizedBox(height: 12),
 
-              const PetPanel(),
-
-              Container(
-                margin: const EdgeInsets.all(12),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  border: Border.all(color: Colors.black, width: 2),
-                  borderRadius: BorderRadius.circular(15),
+            // top card
+            _card(Row(
+              children: [
+                Container(
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.black, width: 2),
+                  ),
+                  child: const Icon(Icons.person, size: 56, color: Colors.black),
                 ),
-                child: Text(
-                  'You are exactly where you need to be.\n\nTrust the path and keep moving forward.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'HappyMonkey',
-                    fontSize: fontSize,
-                    color: textColor,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _labelChip(_username),
+                      const SizedBox(height: 8),
+                      _labelChip('Current Streak: $_streak'),
+                      const SizedBox(height: 8),
+                      _mintBtn('Edit Details', () {
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (_) => const EditDetailsScreen()))
+                            .then((_) => _loadUserInfo());
+                      }),
+                    ],
                   ),
                 ),
-              ),
+              ],
+            )),
 
-              // View Badges and Goals moved to bottom
-              Container(
-                margin: const EdgeInsets.all(12),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  border: Border.all(color: Colors.black, width: 2),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _buildLabelButton(
-                        'View Badges',
-                        bgColor: Theme.of(context).brightness == Brightness.dark
-                            ? const Color(0xFF40D404)
-                            : const Color(0xFFB6FFB1),
-                        fontSize: fontSize,
-                        onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const BadgesScreen())),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _buildLabelButton(
-                        'Goals',
-                        bgColor: Theme.of(context).brightness == Brightness.dark
-                            ? const Color(0xFF40D404)
-                            : const Color(0xFFB6FFB1),
-                        fontSize: fontSize,
-                        onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const GoalsScreen())),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            const SizedBox(height: 12),
+            _card(PetPanel(
+            )),
 
-              const SizedBox(height: 30),
-            ],
-          ),
+            const SizedBox(height: 12),
+            // quote
+            _card(Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+              child: Column(
+                children: [
+                  Text('You are exactly where you need to be.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontFamily: 'HappyMonkey',
+                          fontSize: fs,
+                          fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 10),
+                  Text('Trust the path and keep moving forward.',
+                      textAlign: TextAlign.center,
+                      style:
+                      TextStyle(fontFamily: 'HappyMonkey', fontSize: fs)),
+                ],
+              ),
+            )),
+
+            const SizedBox(height: 12),
+
+            // badges & goals
+            _card(Row(
+              children: [
+                Expanded(
+                  child: _mintBtn('Badges', () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const BadgesScreen()));
+                  }, icon: Icons.emoji_events),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _mintBtn('Goals', () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const GoalsScreen()));
+                  }, icon: Icons.track_changes),
+                ),
+              ],
+            )),
+          ],
         ),
       ),
-      bottomNavigationBar: _buildCustomBottomBar(),
+
+      // NEW NAV BAR (rounded squares, selected = mint)
+      bottomNavigationBar: _navBarV2(),
     );
   }
 
-  Widget _buildCustomBottomBar() {
+  Widget _navBarV2() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      margin: const EdgeInsets.fromLTRB(12, 4, 12, 30),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.black, width: 2),
         boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, -2))
+          BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(0, -2))
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildNavItem(icon: Icons.settings, index: 0),
-          _buildNavItem(icon: Icons.auto_graph, index: 1),
-          _buildNavItem(icon: Icons.home, index: 2),
-          _buildNavItem(icon: Icons.self_improvement, index: 3),
-          _buildNavItem(icon: Icons.person, index: 4, isHome: true),
+          _navSquare(icon: Icons.settings, index: 0),
+          _navSquare(icon: Icons.auto_graph, index: 1),
+          _navSquare(icon: Icons.home, index: 2),
+          _navSquare(icon: Icons.self_improvement, index: 3),
+          _navSquare(icon: Icons.person, index: 4),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(
-      {required IconData icon, required int index, bool isHome = false}) {
-    final isSelected = (_selectedIndex == index);
-    final fillColor = isSelected
-        ? (Theme.of(context).brightness == Brightness.dark
-            ? const Color(0xFF40D404)
-            : const Color(0xFFB6FFB1))
-        : Theme.of(context).colorScheme.surface;
-    final iconColor = isSelected ? Colors.black : Colors.grey[700];
+  Widget _navSquare({required IconData icon, required int index}) {
+    final selected = _selectedIndex == index;
+    final bg = selected ? mint : Colors.white;
+    final ic = selected ? Colors.black : Colors.black87;
 
     return Material(
-      elevation: 3,
-      shape: const CircleBorder(side: BorderSide(color: Colors.black)),
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: const BorderSide(color: Colors.black, width: 2),
+      ),
       child: InkWell(
-        customBorder: const CircleBorder(),
+        borderRadius: BorderRadius.circular(14),
         onTap: () {
           setState(() => _selectedIndex = index);
           if (index == 0) {
-            Navigator.pushReplacement(
-                context, createFadeRoute(const SettingsScreen()));
-          }
-          if (index == 1) {
-            Navigator.pushReplacement(
-                context, createFadeRoute(const InsightsScreen()));
-          }
-          if (index == 2) {
-            Navigator.pushReplacement(
-                context, createFadeRoute(const HomeScreen()));
-          }
-          if (index == 3) {
-            Navigator.pushReplacement(
-                context, createFadeRoute(const ActivitiesScreen()));
-          }
-          if (index == 4) {
-            Navigator.pushReplacement(
-                context, createFadeRoute(const ProfileScreen()));
+            Navigator.pushReplacement(context, createFadeRoute(const SettingsScreen()));
+          } else if (index == 1) {
+            Navigator.pushReplacement(context, createFadeRoute(const InsightsScreen()));
+          } else if (index == 2) {
+            Navigator.pushReplacement(context, createFadeRoute(const HomeScreen()));
+          } else if (index == 3) {
+            Navigator.pushReplacement(context, createFadeRoute(const ActivitiesScreen()));
+          } else if (index == 4) {
+            Navigator.pushReplacement(context, createFadeRoute(const ProfileScreen()));
           }
         },
         child: Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: fillColor),
-            child: Icon(icon, color: iconColor)),
+          width: 56,
+          height: 56,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 2)],
+          ),
+          child: Icon(icon, color: ic, size: 26),
+        ),
       ),
     );
   }

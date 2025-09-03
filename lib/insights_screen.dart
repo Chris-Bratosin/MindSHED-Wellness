@@ -8,6 +8,10 @@ import 'package:mindshed_app/transition_helper.dart';
 import 'package:mindshed_app/insights_engine.dart'
     show DateRange, Grade, InsightsEngine;
 
+const cream = Color(0xFFFFF9DA);
+const mint  = Color(0xFFB6FFB1);
+
+
 class InsightsScreen extends StatefulWidget {
   const InsightsScreen({super.key});
 
@@ -186,7 +190,7 @@ class _InsightsScreenState extends State<InsightsScreen>
       ),
       clipBehavior: Clip.hardEdge,
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: cream,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
@@ -241,9 +245,9 @@ class _InsightsScreenState extends State<InsightsScreen>
         padding: const EdgeInsets.all(24),
         margin: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.red.withOpacity(0.1),
+          color: Colors.red,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.red.withOpacity(0.3)),
+          border: Border.all(color: Colors.red),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -274,9 +278,9 @@ class _InsightsScreenState extends State<InsightsScreen>
       padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.grey.withOpacity(0.1),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.withOpacity(0.3)),
+        border: Border.all(color: Colors.grey),
       ),
       child: Column(
         children: [
@@ -345,7 +349,7 @@ class _InsightsScreenState extends State<InsightsScreen>
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: isDark ? Colors.black26 : Colors.black.withOpacity(0.08),
+              color: isDark ? Colors.black26 : Colors.black12,
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -398,7 +402,7 @@ class _InsightsScreenState extends State<InsightsScreen>
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Icon(
                         Icons.keyboard_arrow_up,
-                        color: Colors.blue.withOpacity(0.6),
+                        color: Colors.lightBlue,
                         size: 16,
                       ),
                     ),
@@ -462,7 +466,7 @@ class _InsightsScreenState extends State<InsightsScreen>
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Icon(
                         Icons.keyboard_arrow_down,
-                        color: Colors.blue.withOpacity(0.6),
+                        color: Colors.lightBlue,
                         size: 16,
                       ),
                     ),
@@ -528,7 +532,7 @@ class _InsightsScreenState extends State<InsightsScreen>
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: isDark ? Colors.black26 : Colors.black.withOpacity(0.08),
+              color: isDark ? Colors.black26 : Colors.black12,
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -603,7 +607,7 @@ class _InsightsScreenState extends State<InsightsScreen>
                 decoration: BoxDecoration(
                   color: _gradeColour.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: _gradeColour.withOpacity(0.3)),
+                  border: Border.all(color: _gradeColour),
                 ),
                 child: Text(
                   _getScoreDescription(_overallScore),
@@ -620,9 +624,9 @@ class _InsightsScreenState extends State<InsightsScreen>
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                  border: Border.all(color: Colors.grey),
                 ),
                 child: Text(
                   'No Data',
@@ -689,13 +693,13 @@ class _InsightsScreenState extends State<InsightsScreen>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black26 : Colors.black.withOpacity(0.1),
+            color: isDark ? Colors.black26 : Colors.black12,
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
         border: Border.all(
-          color: iconColor.withOpacity(0.3),
+          color: iconColor,
           width: 1,
         ),
       ),
@@ -755,69 +759,72 @@ class _InsightsScreenState extends State<InsightsScreen>
 
   Widget _buildCustomBottomBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      margin: const EdgeInsets.fromLTRB(12, 4, 12, 32),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.black, width: 2),
         boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, -2))
+          BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(0, -2)),
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildNavItem(icon: Icons.settings, index: 0),
-          _buildNavItem(icon: Icons.auto_graph, index: 1, isHome: true),
+          _buildNavItem(icon: Icons.auto_graph, index: 1),
           _buildNavItem(icon: Icons.home, index: 2),
           _buildNavItem(icon: Icons.self_improvement, index: 3),
-          _buildNavItem(icon: Icons.person, index: 4)
+          _buildNavItem(icon: Icons.person, index: 4),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(
-      {required IconData icon, required int index, bool isHome = false}) {
+  Widget _buildNavItem({
+    required IconData icon,
+    required int index,
+    bool isHome = false, // kept for compatibility
+  }) {
     final isSelected = (_selectedIndex == index);
-    final fillColor = isSelected
-        ? (Theme.of(context).brightness == Brightness.dark
-            ? const Color(0xFF40D404)
-            : const Color(0xFFB6FFB1))
-        : Theme.of(context).colorScheme.surface;
-    final iconColor = isSelected ? Colors.black : Colors.grey[700];
+    const mint = Color(0xFFB6FFB1); // local const; no class vars changed
+    final bg = isSelected ? mint : Colors.white;
+    final ic = Colors.black;
 
     return Material(
-      elevation: 3,
-      shape: const CircleBorder(side: BorderSide(color: Colors.black)),
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: const BorderSide(color: Colors.black, width: 2),
+      ),
       child: InkWell(
-        customBorder: const CircleBorder(),
+        borderRadius: BorderRadius.circular(14),
         onTap: () {
           setState(() => _selectedIndex = index);
           if (index == 0) {
-            Navigator.pushReplacement(
-                context, createFadeRoute(const SettingsScreen()));
-          }
-          if (index == 1) {
-            Navigator.pushReplacement(
-                context, createFadeRoute(const InsightsScreen()));
-          }
-          if (index == 2) {
-            Navigator.pushReplacement(
-                context, createFadeRoute(const HomeScreen()));
-          }
-          if (index == 3) {
-            Navigator.pushReplacement(
-                context, createFadeRoute(const ActivitiesScreen()));
-          }
-          if (index == 4) {
-            Navigator.pushReplacement(
-                context, createFadeRoute(const ProfileScreen()));
+            Navigator.pushReplacement(context, createFadeRoute(const SettingsScreen()));
+          } else if (index == 1) {
+            Navigator.pushReplacement(context, createFadeRoute(const InsightsScreen()));
+          } else if (index == 2) {
+            Navigator.pushReplacement(context, createFadeRoute(const HomeScreen()));
+          } else if (index == 3) {
+            Navigator.pushReplacement(context, createFadeRoute(const ActivitiesScreen()));
+          } else if (index == 4) {
+            Navigator.pushReplacement(context, createFadeRoute(const ProfileScreen()));
           }
         },
         child: Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: fillColor),
-            child: Icon(icon, color: iconColor)),
+          width: 56,
+          height: 56,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 2)],
+          ),
+          child: Icon(icon, color: ic, size: 26),
+        ),
       ),
     );
   }

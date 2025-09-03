@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mindshed_app/input_metrics_screen.dart';
+
 import 'home_screen.dart';
 import 'settings_screen.dart';
 import 'profile_screen.dart';
@@ -24,268 +25,264 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   bool showQuizScreen = false;
   int _selectedIndex = 3;
 
+  // ——— styles
+  static const Color _cream = Color(0xFFFFF9DA);
+  static const Color _mint = Color(0xFFB6FFB1);
+
   @override
   Widget build(BuildContext context) {
-    final textColor = Theme.of(context).textTheme.bodyMedium?.color;
-    final fontSize = Theme.of(context).textTheme.bodyMedium?.fontSize;
+    // If a sub-screen is active, just show it (your existing flow).
+    if (showJournalScreen) return const JournalScreen();
+    if (showGuidedBreathingScreen) return const GuidedBreathingScreen();
+    if (showSelfCareScreen) return const SelfCareScreen();
+    if (showQuizScreen) return const QuizScreen();
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        centerTitle: true,
-        title: Text(
-          showJournalScreen
-              ? 'My Journal'
-              : showGuidedBreathingScreen
-                  ? 'Meditation'
-                  : showSelfCareScreen
-                      ? 'Self Care'
-                      : showQuizScreen
-                          ? 'Quizzes'
-                          : 'Activities',
+      backgroundColor: _cream,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          children: [
+            _pillHeader(),
+            const SizedBox(height: 18),
+            _activityCard(context),
+            const SizedBox(height: 28),
+            // Mascot spacer — you’ll add your widget here.
+            const SizedBox(height: 160),
+          ],
+        ),
+      ),
+      bottomNavigationBar: _bottomNav(),
+    );
+  }
+
+  // ===== UI pieces =====
+
+  Widget _pillHeader() {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.black, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black,
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: const Text(
+          'Activities',
           style: TextStyle(
             fontFamily: 'HappyMonkey',
-            fontSize: (fontSize ?? 18) + 6,
-            color: textColor,
-          ),
-        ),
-        leading: (showJournalScreen ||
-                showGuidedBreathingScreen ||
-                showSelfCareScreen ||
-                showQuizScreen)
-            ? IconButton(
-                icon: Icon(Icons.arrow_back,
-                    color: Theme.of(context).iconTheme.color),
-                onPressed: () {
-                  setState(() {
-                    showJournalScreen = false;
-                    showGuidedBreathingScreen = false;
-                    showSelfCareScreen = false;
-                    showQuizScreen = false;
-                  });
-                },
-              )
-            : null,
-      ),
-      body: showJournalScreen
-          ? const JournalScreen()
-          : showGuidedBreathingScreen
-              ? const GuidedBreathingScreen()
-              : showSelfCareScreen
-                  ? const SelfCareScreen()
-                  : showQuizScreen
-                      ? const QuizScreen()
-                      : _buildActivityGrid(fontSize),
-      bottomNavigationBar: _buildCustomBottomBar(),
-    );
-  }
-
-  Widget _buildActivityGrid(double? fontSize) {
-    return Column(
-      children: [
-        const SizedBox(height: 20),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.black, width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                _buildActivityButton(
-                  Icons.menu_book,
-                  "My Journal",
-                  fontSize,
-                  () {
-                    setState(() {
-                      showJournalScreen = true;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildActivityButton(
-                  Icons.psychology,
-                  "Guided Breathing",
-                  fontSize,
-                  () {
-                    setState(() {
-                      showGuidedBreathingScreen = true;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildActivityButton(
-                  Icons.people,
-                  "Self Care",
-                  fontSize,
-                  () {
-                    setState(() {
-                      showSelfCareScreen = true;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildActivityButton(
-                  Icons.quiz,
-                  "Quizzes",
-                  fontSize,
-                  () {
-                    setState(() {
-                      showQuizScreen = true;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildActivityButton(
-                  Icons.show_chart,
-                  "Input Data",
-                  fontSize,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const InputMetricsScreen()),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActivityButton(
-      IconData icon, String label, double? fontSize, VoidCallback onTap) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return InkWell(
-      onTap: onTap,
-      child: Material(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Container(
-          width: double.infinity,
-          height: 70,
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF40D404) : const Color(0xFFB6FFB1),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              children: [
-                Icon(icon, color: Colors.black, size: 28),
-                const SizedBox(width: 16),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontFamily: 'HappyMonkey',
-                    fontSize: fontSize ?? 16,
-                    color: Colors.black87,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
+            fontSize: 24,
+            color: Colors.black,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildCustomBottomBar() {
+  Widget _activityCard(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        boxShadow: const [
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.black, width: 2),
+        boxShadow: [
           BoxShadow(
             color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, -2),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+      child: Column(
         children: [
-          _buildNavItem(icon: Icons.settings, index: 0),
-          _buildNavItem(icon: Icons.auto_graph, index: 1),
-          _buildNavItem(icon: Icons.home, index: 2),
-          _buildNavItem(icon: Icons.self_improvement, index: 3, isHome: true),
-          _buildNavItem(icon: Icons.person, index: 4),
+          _activityButton(
+            icon: Icons.menu_book_outlined,
+            label: 'My Journal',
+            onTap: () => setState(() => showJournalScreen = true),
+          ),
+          const SizedBox(height: 16),
+          _activityButton(
+            icon: Icons.psychology_outlined,
+            label: 'Guided\nBreathing',
+            onTap: () => setState(() => showGuidedBreathingScreen = true),
+            twoLine: true,
+          ),
+          const SizedBox(height: 16),
+          _activityButton(
+            icon: Icons.people_outline,
+            label: 'Self Care',
+            onTap: () => setState(() => showSelfCareScreen = true),
+          ),
+          const SizedBox(height: 16),
+          _activityButton(
+            icon: Icons.description_outlined,
+            label: 'Quizzes',
+            onTap: () => setState(() => showQuizScreen = true),
+          ),
+          const SizedBox(height: 16),
+          _activityButton(
+            icon: Icons.show_chart_outlined,
+            label: 'Input Data',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const InputMetricsScreen()),
+              );
+            },
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(
-      {required IconData icon, required int index, bool isHome = false}) {
-    final bool isSelected = (_selectedIndex == index);
-    Color fillColor = isSelected
-        ? (Theme.of(context).brightness == Brightness.dark
-            ? const Color(0xFF40D404)
-            : const Color(0xFFB6FFB1))
-        : Theme.of(context).colorScheme.surface;
-    final iconColor = isSelected ? Colors.black : Colors.grey[700];
+  Widget _activityButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool twoLine = false,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        height: 78,
+        decoration: BoxDecoration(
+          color: _mint,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: Colors.black, width: 2),
+          boxShadow: [
+            // subtle drop shadow like the mock
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 6,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          children: [
+            // Left icon in a soft rounded square to mimic the extra padding
+            Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                color: _mint,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: Colors.black, width: 2),
+              ),
+              alignment: Alignment.center,
+              child: Icon(icon, size: 28, color: Colors.black),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                label,
+                maxLines: twoLine ? 2 : 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontFamily: 'HappyMonkey',
+                  fontSize: 20,
+                  height: 1.05,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _bottomNav() {
+    return SafeArea(
+      top: false,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.black, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _navItem(Icons.settings, 0),
+            _navItem(Icons.auto_graph, 1),
+            _navItem(Icons.home, 2),
+            _navItem(Icons.self_improvement, 3),
+            _navItem(Icons.person, 4),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _navItem(IconData icon, int idx) {
+    final bool isSelected = (_selectedIndex == idx);
+    final Color mint = const Color(0xFFB6FFB1);
 
     return Material(
-      elevation: 3,
-      shape: const CircleBorder(side: BorderSide(color: Colors.black)),
+      elevation: 0,
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Colors.black, width: 2),
+      ),
       child: InkWell(
-        customBorder: const CircleBorder(),
+        borderRadius: BorderRadius.circular(12),
         onTap: () {
-          setState(() {
-            _selectedIndex = index;
-          });
-          if (index == 0) {
-            Navigator.pushReplacement(
-                context, createFadeRoute(const SettingsScreen()));
-          } else if (index == 1) {
-            Navigator.pushReplacement(
-                context, createFadeRoute(const InsightsScreen()));
-          } else if (index == 2) {
-            Navigator.pushReplacement(
-                context, createFadeRoute(const HomeScreen()));
-          } else if (index == 3) {
-            Navigator.pushReplacement(
-                context, createFadeRoute(const ActivitiesScreen()));
-          } else if (index == 4) {
-            Navigator.pushReplacement(
-                context, createFadeRoute(const ProfileScreen()));
+          setState(() => _selectedIndex = idx);
+          if (idx == 0) {
+            Navigator.pushReplacement(context, createFadeRoute(const SettingsScreen()));
+          } else if (idx == 1) {
+            Navigator.pushReplacement(context, createFadeRoute(const InsightsScreen()));
+          } else if (idx == 2) {
+            Navigator.pushReplacement(context, createFadeRoute(const HomeScreen()));
+          } else if (idx == 3) {
+            Navigator.pushReplacement(context, createFadeRoute(const ActivitiesScreen()));
+          } else if (idx == 4) {
+            Navigator.pushReplacement(context, createFadeRoute(const ProfileScreen()));
           }
         },
         child: Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(shape: BoxShape.circle, color: fillColor),
-          child: Icon(icon, color: iconColor),
+          width: 56,
+          height: 56,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: isSelected ? mint : Colors.white,     // white idle, mint selected
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(                                  // soft drop like the mock
+                color: Colors.black26,
+                blurRadius: 6,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Icon(
+            icon,
+            size: 24,
+            color: isSelected ? Colors.black : Colors.grey[800],
+          ),
         ),
       ),
     );
   }
+
 }

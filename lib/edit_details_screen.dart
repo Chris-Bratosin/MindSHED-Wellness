@@ -5,6 +5,8 @@ import 'package:hive/hive.dart';
 import 'user.dart';
 import 'package:intl/intl.dart';
 
+const cream = Color(0xFFFFF9DA);
+
 class EditDetailsScreen extends StatefulWidget {
   const EditDetailsScreen({super.key});
 
@@ -137,8 +139,9 @@ class _EditDetailsScreenState extends State<EditDetailsScreen> {
     final double fontSize = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 18;
 
     return Scaffold(
+      backgroundColor: cream,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: cream,
         elevation: 0,
         centerTitle: true,
         title: Text(
@@ -182,7 +185,7 @@ class _EditDetailsScreenState extends State<EditDetailsScreen> {
                   ElevatedButton(
                     onPressed: _saveChanges,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green.shade300,
+                      backgroundColor: Color(0xFFB6FFB1),
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
