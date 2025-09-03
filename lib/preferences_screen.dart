@@ -115,7 +115,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.black, width: 1),
+        border: Border.all(color: Colors.black, width: 2),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -185,7 +185,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.black, width: 1),
+        border: Border.all(color: Colors.black, width: 2),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,7 +224,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                         ? const Color(0xFFB6FFB1) // Light green for selected
                         : Colors.white,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.black, width: 1),
+                    border: Border.all(color: Colors.black, width: 2),
                   ),
                   child: Text(
                     size,
@@ -250,7 +250,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.black, width: 1),
+        border: Border.all(color: Colors.black, width: 2),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -275,7 +275,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.black, width: 1),
+                  border: Border.all(color: Colors.black, width: 2),
                 ),
                 child: Stack(
                   alignment: Alignment.center,

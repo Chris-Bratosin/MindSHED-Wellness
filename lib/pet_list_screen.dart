@@ -10,7 +10,13 @@ String _fmtDate(DateTime d) =>
     '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 
 class SafeSvg extends StatelessWidget {
-  const SafeSvg(this.asset, {super.key, this.width, this.height, this.fit = BoxFit.contain});
+  const SafeSvg(
+    this.asset, {
+    super.key,
+    this.width,
+    this.height,
+    this.fit = BoxFit.contain,
+  });
   final String? asset;
   final double? width;
   final double? height;
@@ -45,7 +51,6 @@ class SafeSvg extends StatelessWidget {
   }
 }
 
-
 class PetInfo {
   final String id;
   final String title;
@@ -54,9 +59,9 @@ class PetInfo {
 
   const PetInfo(this.id, this.title, this.blurb, {this.locked = false});
   const PetInfo.locked(this.id)
-      : title = 'Locked',
-        blurb = 'This pet is currently locked.',
-        locked = true;
+    : title = 'Locked',
+      blurb = 'This pet is currently locked.',
+      locked = true;
 }
 
 // Descriptions (edit as you like).
@@ -142,13 +147,13 @@ class PetListScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: theme.cardColor,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.black12),
+                border: Border.all(color: Colors.black, width: 2),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black12,
                     blurRadius: 10,
                     offset: const Offset(0, 4),
-                  )
+                  ),
                 ],
               ),
               child: Column(
@@ -162,10 +167,7 @@ class PetListScreen extends StatelessWidget {
                       size: 60,
                     ),
                   const SizedBox(height: 8),
-                  Text(
-                    pet.title,
-                    style: theme.textTheme.titleMedium,
-                  ),
+                  Text(pet.title, style: theme.textTheme.titleMedium),
                 ],
               ),
             ),
@@ -199,8 +201,9 @@ class _PetSheet extends StatelessWidget {
     final prefs = Hive.box('prefs');
     final sinceKey = 'friendSince:${username}_${pet.id}';
     final int? sinceMs = prefs.get(sinceKey) as int?;
-    final DateTime sinceDate =
-    sinceMs != null ? DateTime.fromMillisecondsSinceEpoch(sinceMs) : DateTime.now();
+    final DateTime sinceDate = sinceMs != null
+        ? DateTime.fromMillisecondsSinceEpoch(sinceMs)
+        : DateTime.now();
     final String sinceLabel = _fmtDate(sinceDate);
 
     final theme = Theme.of(context);
@@ -230,11 +233,14 @@ class _PetSheet extends StatelessWidget {
 
             if (!pet.locked)
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 16,
+                ),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.black12),
+                  border: Border.all(color: Colors.black, width: 2),
                 ),
                 child: Text(
                   'Friends with $username since: $sinceLabel',
@@ -261,14 +267,18 @@ class _PetSheet extends StatelessWidget {
                     await PetSelection.instance.setSelected(pet.id);
 
                     if (prefs.get(sinceKey) == null) {
-                      await prefs.put(sinceKey, DateTime.now().millisecondsSinceEpoch);
+                      await prefs.put(
+                        sinceKey,
+                        DateTime.now().millisecondsSinceEpoch,
+                      );
                     }
 
                     if (context.mounted) Navigator.pop(context);
                   },
                   style: ButtonStyle(
-                    backgroundColor:
-                    MaterialStateProperty.all(const Color(0xFFFFF9DA)), // mint
+                    backgroundColor: MaterialStateProperty.all(
+                      const Color(0xFFFFF9DA),
+                    ), // mint
                     side: MaterialStateProperty.all(
                       const BorderSide(color: Colors.black, width: 2),
                     ),
@@ -282,10 +292,9 @@ class _PetSheet extends StatelessWidget {
                       const EdgeInsets.symmetric(vertical: 14),
                     ),
                     textStyle: MaterialStateProperty.all(
-                      Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w600),
+                      Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   child: Text('Choose ${pet.title}'),

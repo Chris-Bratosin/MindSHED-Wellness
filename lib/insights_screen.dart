@@ -5,8 +5,8 @@ import 'package:mindshed_app/settings_screen.dart';
 import 'package:mindshed_app/activities_screen.dart';
 import 'package:mindshed_app/profile_screen.dart';
 import 'package:mindshed_app/transition_helper.dart';
-import 'package:mindshed_app/insights_engine.dart'
-    show DateRange, Grade, InsightsEngine;
+import 'package:mindshed_app/new_insights_engine.dart'
+    show DateRange, Grade, NewInsightsEngine;
 import 'shared_navigation.dart';
 import 'shared_ui_components.dart';
 
@@ -25,20 +25,19 @@ class _InsightsScreenState extends State<InsightsScreen>
   int _selectedIndex = 1;
   DateRange _selectedRange = DateRange.daily;
 
-  int _overallScore = 0;
+  double _overallScore = 0.0;
   Color _gradeColour = Colors.grey;
 
   Map<String, Grade> _categoryGrades = {};
 
   late final AnimationController _fadeController;
   late final Animation<double> _fadeAnimation;
-  late final PageController _dateRangeController;
 
   late Box _metricsBox;
 
   bool _isLoading = false;
   String? _error;
-  InsightsEngine? _engine;
+  NewInsightsEngine? _engine;
 
   @override
   void initState() {
@@ -53,10 +52,6 @@ class _InsightsScreenState extends State<InsightsScreen>
       parent: _fadeController,
       curve: Curves.easeInOut,
     );
-
-    _dateRangeController = PageController(
-      initialPage: 0,
-    ); // Start with daily (top)
 
     // Initialize asynchronously
     _initializeData();
@@ -82,7 +77,6 @@ class _InsightsScreenState extends State<InsightsScreen>
   @override
   void dispose() {
     _fadeController.dispose();
-    _dateRangeController.dispose();
     super.dispose();
   }
 
@@ -115,11 +109,11 @@ class _InsightsScreenState extends State<InsightsScreen>
       }
 
       if (_engine == null) {
-        _engine = InsightsEngine(_metricsBox);
-        await _engine!.initPredictor();
+        _engine = NewInsightsEngine(_metricsBox);
+        await _engine!.initialize();
       }
 
-      final score = await _engine!.getPredictedScore(userId, _selectedRange);
+      final score = await _engine!.getWellnessScore(userId, _selectedRange);
       final grades = await _engine!.getCategoryGrades(userId, _selectedRange);
 
       if (mounted) {
@@ -154,18 +148,75 @@ class _InsightsScreenState extends State<InsightsScreen>
     _loadInsights();
   }
 
-  String _pretty(String k) {
-    switch (k) {
-      case 'sleep_bucket':
-        return 'Sleep';
-      case 'exercise_bucket':
-        return 'Exercise';
-      case 'hydration_bucket':
-        return 'Hydration';
-      case 'mindfulness_activities':
-        return 'Mindfulness';
+  // Updated category mapping for 8 categories
+  String _pretty(String category) {
+    switch (category) {
+      case 'sleep_health':
+        return 'Sleep Health';
+      case 'cardiovascular':
+        return 'Cardiovascular';
+      case 'physical_activity':
+        return 'Physical Activity';
+      case 'consistency_habits':
+        return 'Consistency & Habits';
+      case 'recovery_stress':
+        return 'Recovery & Stress';
+      case 'social_wellness':
+        return 'Social Wellness';
+      case 'nutrition_hydration':
+        return 'Nutrition & Hydration';
+      case 'mental_wellness':
+        return 'Mental Wellness';
       default:
-        return _capitalizeWords(k.replaceAll('_', ' '));
+        return _capitalizeWords(category.replaceAll('_', ' '));
+    }
+  }
+
+  // NEW: Check if category needs multi-day data
+  bool _needsMultiDayData(String category) {
+    return [
+      'sleep_health',
+      'consistency_habits',
+      'recovery_stress',
+      'social_wellness',
+    ].contains(category);
+  }
+
+  // NEW: Get date range label
+  String _getDateRangeLabel(DateRange range) {
+    switch (range) {
+      case DateRange.daily:
+        return 'Daily';
+      case DateRange.weekly:
+        return 'Weekly';
+      case DateRange.monthly:
+        return 'Monthly';
+      case DateRange.overall:
+        return 'Overall';
+    }
+  }
+
+  // Updated icon mapping for 8 categories
+  IconData _getCategoryIconData(String category) {
+    switch (category) {
+      case 'sleep_health':
+        return Icons.bedtime_outlined;
+      case 'cardiovascular':
+        return Icons.favorite_outline;
+      case 'physical_activity':
+        return Icons.directions_run_outlined;
+      case 'consistency_habits':
+        return Icons.repeat_outlined;
+      case 'recovery_stress':
+        return Icons.spa_outlined;
+      case 'social_wellness':
+        return Icons.people_outline;
+      case 'nutrition_hydration':
+        return Icons.local_drink_outlined;
+      case 'mental_wellness':
+        return Icons.psychology_outlined;
+      default:
+        return Icons.health_and_safety_outlined;
     }
   }
 
@@ -370,154 +421,106 @@ class _InsightsScreenState extends State<InsightsScreen>
     ],
   );
 
-  Widget _buildDateRangeCard(double? fontSize, Color? textColor, bool isDark) =>
-      Container(
-        padding: const EdgeInsets.all(12),
-        height: 180,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2A2B30) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: isDark ? Colors.black26 : Colors.black12,
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-          border: Border.all(
-            color: isDark ? Colors.white10 : Colors.black,
-            width: isDark ? 1 : 2,
-          ),
+  Widget _buildDateRangeCard(
+    double? fontSize,
+    Color? textColor,
+    bool isDark,
+  ) => Container(
+    padding: const EdgeInsets.all(12),
+    height: 180,
+    decoration: BoxDecoration(
+      color: isDark ? const Color(0xFF2A2B30) : Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: isDark ? Colors.black26 : Colors.black12,
+          blurRadius: 8,
+          offset: const Offset(0, 3),
         ),
-        child: Column(
+      ],
+      border: Border.all(
+        color: isDark ? Colors.white10 : Colors.black,
+        width: isDark ? 1 : 2,
+      ),
+    ),
+    child: Column(
+      children: [
+        Row(
           children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.calendar_today_rounded,
-                  color: Colors.blue,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Date Range',
-                  style: TextStyle(
-                    fontFamily: 'HappyMonkey',
-                    fontSize: (fontSize ?? 16) + 1,
-                    color: textColor,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Column(
-                children: [
-                  // Top indicator
-                  GestureDetector(
-                    onTap: () {
-                      if (_selectedRange == DateRange.weekly) {
-                        _dateRangeController.animateToPage(
-                          0,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                        _onDateRangeChanged(DateRange.daily);
-                      } else if (_selectedRange == DateRange.monthly) {
-                        _dateRangeController.animateToPage(
-                          1,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                        _onDateRangeChanged(DateRange.weekly);
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Icon(
-                        Icons.keyboard_arrow_up,
-                        color: Colors.lightBlue,
-                        size: 16,
-                      ),
-                    ),
-                  ),
-                  // Date range selector
-                  Expanded(
-                    child: ClipRect(
-                      child: Builder(
-                        builder: (context) => PageView(
-                          controller: _dateRangeController,
-                          scrollDirection: Axis.vertical,
-                          physics: const NeverScrollableScrollPhysics(),
-                          onPageChanged: (index) {
-                            final ranges = [
-                              DateRange.daily, // Top - Daily
-                              DateRange.weekly, // Middle - Weekly
-                              DateRange.monthly, // Bottom - Monthly
-                            ];
-                            _onDateRangeChanged(ranges[index]);
-                          },
-                          children: [
-                            _buildDateRangeOption(
-                              DateRange.daily,
-                              'Daily',
-                              fontSize,
-                              isDark,
-                              _selectedRange == DateRange.daily,
-                            ),
-                            _buildDateRangeOption(
-                              DateRange.weekly,
-                              'Weekly',
-                              fontSize,
-                              isDark,
-                              _selectedRange == DateRange.weekly,
-                            ),
-                            _buildDateRangeOption(
-                              DateRange.monthly,
-                              'Monthly',
-                              fontSize,
-                              isDark,
-                              _selectedRange == DateRange.monthly,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Bottom indicator
-                  GestureDetector(
-                    onTap: () {
-                      if (_selectedRange == DateRange.daily) {
-                        _dateRangeController.animateToPage(
-                          1,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                        _onDateRangeChanged(DateRange.weekly);
-                      } else if (_selectedRange == DateRange.weekly) {
-                        _dateRangeController.animateToPage(
-                          2,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                        _onDateRangeChanged(DateRange.monthly);
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Icon(
-                        Icons.keyboard_arrow_down,
-                        color: Colors.lightBlue,
-                        size: 16,
-                      ),
-                    ),
-                  ),
-                ],
+            Icon(Icons.calendar_today_rounded, color: Colors.blue, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              'Date Range',
+              style: TextStyle(
+                fontFamily: 'HappyMonkey',
+                fontSize: (fontSize ?? 16) + 1,
+                color: textColor,
               ),
             ),
           ],
         ),
-      );
+        const SizedBox(height: 16),
+        Expanded(
+          child: Column(
+            children: [
+              // Top indicator
+              GestureDetector(
+                onTap: () {
+                  if (_selectedRange == DateRange.weekly) {
+                    _onDateRangeChanged(DateRange.daily);
+                  } else if (_selectedRange == DateRange.monthly) {
+                    _onDateRangeChanged(DateRange.weekly);
+                  } else if (_selectedRange == DateRange.overall) {
+                    _onDateRangeChanged(DateRange.monthly);
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Icon(
+                    Icons.keyboard_arrow_up,
+                    color: Colors.lightBlue,
+                    size: 16,
+                  ),
+                ),
+              ),
+              // Date range selector
+              Expanded(
+                child: Center(
+                  child: _buildDateRangeOption(
+                    _selectedRange,
+                    _getDateRangeLabel(_selectedRange),
+                    fontSize,
+                    isDark,
+                    true, // Always selected since this is the current selection
+                  ),
+                ),
+              ),
+              // Bottom indicator
+              GestureDetector(
+                onTap: () {
+                  if (_selectedRange == DateRange.daily) {
+                    _onDateRangeChanged(DateRange.weekly);
+                  } else if (_selectedRange == DateRange.weekly) {
+                    _onDateRangeChanged(DateRange.monthly);
+                  } else if (_selectedRange == DateRange.monthly) {
+                    _onDateRangeChanged(DateRange.overall);
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Icon(
+                    Icons.keyboard_arrow_down,
+                    color: Colors.lightBlue,
+                    size: 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
 
   Widget _buildDateRangeOption(
     DateRange range,
@@ -631,7 +634,7 @@ class _InsightsScreenState extends State<InsightsScreen>
                   ),
                 ),
                 Text(
-                  '$_overallScore%',
+                  '${_overallScore.toStringAsFixed(1)}%',
                   style: TextStyle(
                     fontFamily: 'HappyMonkey',
                     fontSize: (fontSize ?? 16) > 20 ? 16 : (fontSize ?? 16),
@@ -686,7 +689,7 @@ class _InsightsScreenState extends State<InsightsScreen>
     ),
   );
 
-  String _getScoreDescription(int score) {
+  String _getScoreDescription(double score) {
     if (score == 0) return 'No Data';
     if (score >= 80) return 'Excellent';
     if (score >= 60) return 'Good';
@@ -771,25 +774,26 @@ class _InsightsScreenState extends State<InsightsScreen>
     );
   }
 
-  IconData _getCategoryIcon(String key) {
-    switch (key) {
-      case 'sleep_bucket':
-      case 'sleep':
-      case 'sleep_quality':
-        return Icons.nights_stay_outlined; // Crescent moon for sleep
-      case 'hydration_bucket':
-      case 'hydration':
-        return Icons.water_drop_outlined; // Water drop for hydration
-      case 'exercise_bucket':
-      case 'exercise':
-        return Icons.fitness_center_outlined; // Dumbbell for exercise
-      case 'mindfulness_activities':
-      case 'mindfulness':
-        return Icons.psychology_outlined; // Brain icon for mindfulness
-      case 'diet':
-        return Icons.restaurant_menu_outlined; // Fork and knife for diet
+  IconData _getCategoryIcon(String category) {
+    switch (category) {
+      case 'sleep_health':
+        return Icons.bedtime_outlined;
+      case 'cardiovascular':
+        return Icons.favorite_outline;
+      case 'physical_activity':
+        return Icons.directions_run_outlined;
+      case 'consistency_habits':
+        return Icons.repeat_outlined;
+      case 'recovery_stress':
+        return Icons.spa_outlined;
+      case 'social_wellness':
+        return Icons.people_outline;
+      case 'nutrition_hydration':
+        return Icons.local_drink_outlined;
+      case 'mental_wellness':
+        return Icons.psychology_outlined;
       default:
-        return Icons.help_outline; // Fallback icon for unknown categories
+        return Icons.health_and_safety_outlined;
     }
   }
 }

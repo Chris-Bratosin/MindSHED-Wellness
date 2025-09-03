@@ -49,8 +49,8 @@ class UnifiedHealthData {
           : null,
       exercises: data['exercises'] != null
           ? (data['exercises'] as List)
-              .map((e) => ExerciseSession.fromAppleHealth(e))
-              .toList()
+                .map((e) => ExerciseSession.fromAppleHealth(e))
+                .toList()
           : null,
       caloriesBurned: data['caloriesBurned']?.toDouble(),
       source: DataSource.appleHealth,
@@ -72,12 +72,13 @@ class UnifiedHealthData {
       steps: data['steps'] ?? 0,
       heartRate: data['heartRate']?.toDouble(),
       hrv: data['hrv']?.toDouble(),
-      sleep:
-          data['sleep'] != null ? SleepData.fromGoogleFit(data['sleep']) : null,
+      sleep: data['sleep'] != null
+          ? SleepData.fromGoogleFit(data['sleep'])
+          : null,
       exercises: data['exercises'] != null
           ? (data['exercises'] as List)
-              .map((e) => ExerciseSession.fromGoogleFit(e))
-              .toList()
+                .map((e) => ExerciseSession.fromGoogleFit(e))
+                .toList()
           : null,
       caloriesBurned: data['caloriesBurned']?.toDouble(),
       source: DataSource.googleFit,
@@ -99,12 +100,13 @@ class UnifiedHealthData {
       steps: data['steps'] ?? 0,
       heartRate: data['heartRate']?.toDouble(),
       hrv: data['hrv']?.toDouble(),
-      sleep:
-          data['sleep'] != null ? SleepData.fromOuraRing(data['sleep']) : null,
+      sleep: data['sleep'] != null
+          ? SleepData.fromOuraRing(data['sleep'])
+          : null,
       exercises: data['exercises'] != null
           ? (data['exercises'] as List)
-              .map((e) => ExerciseSession.fromOuraRing(e))
-              .toList()
+                .map((e) => ExerciseSession.fromOuraRing(e))
+                .toList()
           : null,
       caloriesBurned: data['caloriesBurned']?.toDouble(),
       source: DataSource.ouraRing,
@@ -165,6 +167,56 @@ class UnifiedHealthData {
       restDayAdherence: 0.5,
       socialInteractionScore: 0.5,
       supportNetworkScore: 0.5,
+    );
+  }
+
+  // Create from manual entry data
+  factory UnifiedHealthData.fromManualEntry(Map<String, dynamic> data) {
+    SleepData? sleepData;
+    if (data['sleep_hours'] != null || data['sleep_minutes'] != null) {
+      final hours = data['sleep_hours'] as int? ?? 0;
+      final minutes = data['sleep_minutes'] as int? ?? 0;
+      final totalMinutes = hours * 60 + minutes;
+
+      if (totalMinutes > 0) {
+        sleepData = SleepData(
+          totalSleep: Duration(minutes: totalMinutes),
+          sleepEfficiency: data['sleep_efficiency']?.toDouble() ?? 0.8,
+          deepSleepPercentage: null,
+          remSleepPercentage: null,
+          lightSleepPercentage: null,
+          sleepLatency: Duration(minutes: 15),
+          wakeAfterSleepOnset: 0,
+          scheduleConsistency: data['weekly_consistency']?.toDouble() ?? 0.7,
+          environmentScore: 0.8,
+          preSleepRoutineScore: 0.7,
+        );
+      }
+    }
+
+    return UnifiedHealthData(
+      steps: data['steps'] ?? 0,
+      heartRate: data['heart_rate']?.toDouble(),
+      hrv: null,
+      sleep: sleepData,
+      exercises: null,
+      caloriesBurned: null,
+      source: DataSource.manualEntry,
+      quality: DataQuality.minimal,
+      age: data['age'] ?? 30,
+      recoveryScore: null,
+      activeMinutes: data['active_minutes'] ?? 0,
+      exerciseSessions: data['mindfulness_activities'] != null
+          ? (data['mindfulness_activities'] as List)
+                .where((a) => ['Exercise', 'Gym', 'Swimming'].contains(a))
+                .length
+          : 0,
+      weeklyActivityConsistency: data['weekly_consistency']?.toDouble() ?? 0.5,
+      sedentaryMinutes: 480,
+      restDayAdherence: data['rest_day_adherence']?.toDouble() ?? 0.5,
+      socialInteractionScore:
+          data['social_interaction_score']?.toDouble() ?? 0.5,
+      supportNetworkScore: data['support_network_score']?.toDouble() ?? 0.5,
     );
   }
 }
@@ -331,8 +383,9 @@ class ExerciseSession {
       averageHeartRate: data['averageHeartRate']?.toDouble(),
       maxHeartRate: data['maxHeartRate']?.toDouble(),
       distance: data['distance']?.toDouble(),
-      startTime:
-          DateTime.parse(data['startTime'] ?? DateTime.now().toIso8601String()),
+      startTime: DateTime.parse(
+        data['startTime'] ?? DateTime.now().toIso8601String(),
+      ),
     );
   }
 
@@ -344,8 +397,9 @@ class ExerciseSession {
       averageHeartRate: data['averageHeartRate']?.toDouble(),
       maxHeartRate: data['maxHeartRate']?.toDouble(),
       distance: data['distance']?.toDouble(),
-      startTime:
-          DateTime.parse(data['startTime'] ?? DateTime.now().toIso8601String()),
+      startTime: DateTime.parse(
+        data['startTime'] ?? DateTime.now().toIso8601String(),
+      ),
     );
   }
 
@@ -357,25 +411,20 @@ class ExerciseSession {
       averageHeartRate: data['averageHeartRate']?.toDouble(),
       maxHeartRate: data['maxHeartRate']?.toDouble(),
       distance: data['distance']?.toDouble(),
-      startTime:
-          DateTime.parse(data['startTime'] ?? DateTime.now().toIso8601String()),
+      startTime: DateTime.parse(
+        data['startTime'] ?? DateTime.now().toIso8601String(),
+      ),
     );
   }
 }
 
 // Data source enum
-enum DataSource {
-  appleHealth,
-  googleFit,
-  ouraRing,
-  phoneSensors,
-  manualEntry,
-}
+enum DataSource { appleHealth, googleFit, ouraRing, phoneSensors, manualEntry }
 
 // Data quality enum
 enum DataQuality {
   premium, // Oura Ring, detailed Apple Health
   comprehensive, // Apple Health, Google Fit
   basic, // Phone sensors
-  minimal // Manual entry
+  minimal, // Manual entry
 }
